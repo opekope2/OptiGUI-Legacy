@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "optigui",
-  "version": "${version}",
+  "version": "0.1.0",
 
   "name": "OptiGUI",
   "description": "A drop-in replacement for OptiFine custom GUIs",
@@ -20,7 +20,7 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "io.github.opekope2.optigui.OptiGUIClient"
+      "opekope2.optigui.OptiGUIClient"
     ]
   },
   "mixins": [
@@ -34,6 +34,6 @@
     "java": ">=17"
   },
   "suggests": {
-    "another-mod": "*"
+    "animatica": "*"
   }
 }
