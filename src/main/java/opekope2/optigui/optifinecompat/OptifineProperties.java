@@ -3,6 +3,7 @@ package opekope2.optigui.optifinecompat;
 import static opekope2.optigui.util.OptifineParser.parseList;
 import static opekope2.optigui.util.Util.contains;
 import static opekope2.optigui.util.Util.getBoolean;
+import static opekope2.optigui.util.Util.isChristmas;
 
 import java.io.IOException;
 import java.util.*;
@@ -364,13 +365,14 @@ public class OptifineProperties {
         Comparable<?> type = state.getEntries().get(CHEST_TYPE_ENUM);
 
         boolean matchesLarge = large == null || (type == null || large != type.equals(ChestType.SINGLE));
+        boolean matchesChristmas = christmas == null ? true : christmas == isChristmas();
 
         if (ID.CHEST.equals(id)) {
-            return matchesLarge && !Boolean.TRUE.equals(trapped) && !Boolean.TRUE.equals(ender);
+            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.TRUE.equals(ender);
         } else if (ID.TRAPPED_CHEST.equals(id)) {
-            return matchesLarge && !Boolean.FALSE.equals(trapped) && !Boolean.TRUE.equals(ender);
+            return matchesLarge && matchesChristmas && !Boolean.FALSE.equals(trapped) && !Boolean.TRUE.equals(ender);
         } else if (ID.ENDER_CHEST.equals(id)) {
-            return matchesLarge && !Boolean.TRUE.equals(trapped) && !Boolean.FALSE.equals(ender);
+            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.FALSE.equals(ender);
         }
         return false;
     }
