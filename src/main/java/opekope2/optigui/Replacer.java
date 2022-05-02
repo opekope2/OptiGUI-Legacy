@@ -7,7 +7,9 @@ import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 import opekope2.optigui.optifinecompat.OptifineProperties;
 
@@ -46,6 +48,7 @@ public class Replacer {
         lastUsedEntity = entity;
     }
 
+    @SuppressWarnings("resource")
     public Identifier getReplacement(Identifier id) {
         for (OptifineProperties props : properties) {
             if (lastUsedBlock != null && props.hasReplacement(id)
@@ -53,6 +56,10 @@ public class Replacer {
                 return props.getReplacementTexture(id);
             }
             if (lastUsedEntity != null && props.hasReplacement(id) && props.matches(lastUsedEntity)) {
+                return props.getReplacementTexture(id);
+            }
+            PlayerEntity player = MinecraftClient.getInstance().player;
+            if (player != null && props.hasReplacement(id) && props.matches(player)) {
                 return props.getReplacementTexture(id);
             }
         }

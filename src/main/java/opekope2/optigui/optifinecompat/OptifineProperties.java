@@ -14,6 +14,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.predicate.NumberRange.IntRange;
@@ -113,7 +114,7 @@ public class OptifineProperties {
     private List<VillagerMatcher> professions = null;
     private List<String> colors = null;
 
-    private Identifier[] ids = new Identifier[0];
+    private Identifier[] ids = null;
 
     private OptifineProperties(ReloadContext context) {
         loadFromReloadContext(context);
@@ -214,6 +215,29 @@ public class OptifineProperties {
         return matchesEntity && matchesHeight && matchesBiome && matchesName && isEntity && contains(ids, entityId);
     }
 
+    public boolean matches(PlayerEntity player) {
+        boolean matchesBiome = true;
+        if (biomes != null) {
+            World world = player.getWorld();
+            Identifier biome = world.getRegistryManager().get(Registry.BIOME_KEY)
+                    .getId(world.getBiome(player.getBlockPos()).value());
+            matchesBiome = biomes.contains(biome);
+        }
+
+        boolean matchesHeight = true;
+        if (heights != null) {
+            matchesBiome = false;
+            for (IntRange height : heights) {
+                if (height.test(player.getBlockPos().getY())) {
+                    matchesHeight = true;
+                    break;
+                }
+            }
+        }
+
+        return matchesHeight && matchesBiome && ids == null;
+    }
+
     public boolean hasReplacement(Identifier original) {
         return textureRemaps.containsKey(original);
     }
@@ -257,20 +281,36 @@ public class OptifineProperties {
     private void loadTextureRemaps(ReloadContext ctx) {
         String container = ctx.getProperties().getProperty("container", null);
         String texture = ctx.getProperties().getProperty("texture", null);
-        if (texture == null) {
-            return;
-        }
-        texture = texture.trim();
-
         String resFolder = ctx.getResourceId().toString();
         resFolder = resFolder.substring(resFolder.indexOf(":") + 1, resFolder.lastIndexOf("/"));
 
-        Identifier id = PathResolver.resolve(resFolder, texture);
-        Identifier foundId = ctx.findResource(id);
-        if (foundId == null) {
-            OptiGUIClient.LOGGER.warn("Resource '{}' is missing!", id.toString());
-        } else {
-            textureRemaps.put(textureAutoMapping.get(container), foundId);
+        if (texture != null) {
+            texture = texture.trim();
+
+            Identifier id = PathResolver.resolve(resFolder, texture);
+            Identifier foundId = ctx.findResource(id);
+            if (foundId == null) {
+                OptiGUIClient.LOGGER.warn("Resource '{}' is missing!", id.toString());
+            } else {
+                textureRemaps.put(textureAutoMapping.get(container), foundId);
+            }
+        }
+
+        for (var property : ctx.getProperties().entrySet()) {
+            String key = (String) property.getKey();
+            String value = (String) property.getValue();
+            String texturePathPrefix = "texture.";
+
+            if (key.startsWith(texturePathPrefix)) {
+                Identifier id = PathResolver.resolve(resFolder, value);
+                Identifier foundId = ctx.findResource(id);
+                if (foundId == null) {
+                    OptiGUIClient.LOGGER.warn("Resource '{}' is missing!", id.toString());
+                } else {
+                    String texturePath = key.substring(texturePathPrefix.length());
+                    textureRemaps.put(PathResolver.resolve("textures/gui", texturePath), foundId);
+                }
+            }
         }
     }
 

@@ -28,6 +28,9 @@ public final class Util {
     }
 
     public static <T> boolean contains(T[] array, T value) {
+        if (array == null) {
+            return false;
+        }
         for (T t : array) {
             if (value == null) {
                 if (t == null) {
