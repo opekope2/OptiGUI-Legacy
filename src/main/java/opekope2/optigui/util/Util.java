@@ -5,15 +5,14 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
+
 public final class Util {
     public static <T> List<T> listOf() {
         return new ArrayList<>();
-    }
-
-    public static <T> List<T> listOf(T item) {
-        List<T> result = listOf();
-        result.add(item);
-        return result;
     }
 
     public static Boolean getBoolean(String s) {
@@ -47,6 +46,12 @@ public final class Util {
         LocalDateTime date = LocalDateTime.now();
         int day = date.getDayOfMonth();
         return date.getMonth() == Month.DECEMBER && (day >= 24 || day <= 26);
+    }
+
+    public static Identifier getBiomeId(BlockPos pos) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        return mc.world.getRegistryManager().get(Registry.BIOME_KEY)
+                .getId(mc.world.getBiome(pos).value());
     }
 
     private Util() {

@@ -2,7 +2,7 @@ package opekope2.optigui.util;
 
 import net.minecraft.util.Identifier;
 
-public final class TextureResourcePath {
+public final class BuiltinTexturePath {
     public static final Identifier ANVIL = new Identifier("minecraft", "textures/gui/container/anvil.png");
     public static final Identifier BEACON = new Identifier("minecraft", "textures/gui/container/beacon.png");
     public static final Identifier BREWING_STAND = new Identifier("minecraft",
@@ -19,6 +19,6 @@ public final class TextureResourcePath {
     public static final Identifier SHULKER_BOX = new Identifier("minecraft", "textures/gui/container/shulker_box.png");
     public static final Identifier VILLAGER = new Identifier("minecraft", "textures/gui/container/villager2.png");
 
-    private TextureResourcePath() {
+    private BuiltinTexturePath() {
     }
 }

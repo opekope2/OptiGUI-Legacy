@@ -9,8 +9,9 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import net.minecraft.util.Identifier;
 import opekope2.optigui.Replacer;
 
+// Inject before Animatica for full compatibility
 @Mixin(value = RenderSystem.class, priority = 900)
-public class RenderSystemMixin {
+public final class RenderSystemMixin {
 	@ModifyVariable(method = "_setShaderTexture(ILnet/minecraft/util/Identifier;)V", at = @At("HEAD"), index = 1)
 	private static Identifier setShaderTextureMixin(Identifier id) {
 		return Replacer.instance.getReplacement(id);

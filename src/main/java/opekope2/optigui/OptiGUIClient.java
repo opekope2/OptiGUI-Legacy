@@ -11,11 +11,11 @@ import net.minecraft.resource.ResourceType;
 import opekope2.optigui.callback.UseCallback;
 import opekope2.optigui.optifinecompat.OptifineResourceLoader;
 
-public class OptiGUIClient implements ClientModInitializer {
+public final class OptiGUIClient implements ClientModInitializer {
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.
 	// That way, it's clear which mod wrote info, warnings, and errors.
-	public static final Logger LOGGER = LoggerFactory.getLogger("OptiGUI");
+	public static final Logger logger = LoggerFactory.getLogger("OptiGUI");
 
 	@Override
 	public void onInitializeClient() {
@@ -23,5 +23,6 @@ public class OptiGUIClient implements ClientModInitializer {
 		UseCallback useCallback = new UseCallback();
 		UseBlockCallback.EVENT.register(useCallback);
 		UseEntityCallback.EVENT.register(useCallback);
+		logger.info("OptiGUI initialized.");
 	}
 }
