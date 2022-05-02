@@ -168,6 +168,25 @@ public class OptifineProperties {
     }
 
     public boolean matches(Entity entity) {
+        boolean matchesBiome = true;
+        if (biomes != null) {
+            World world = entity.getWorld();
+            Identifier biome = world.getRegistryManager().get(Registry.BIOME_KEY)
+                    .getId(world.getBiome(entity.getBlockPos()).value());
+            matchesBiome = biomes.contains(biome);
+        }
+
+        boolean matchesHeight = true;
+        if (heights != null) {
+            matchesBiome = false;
+            for (IntRange height : heights) {
+                if (height.test(entity.getBlockPos().getY())) {
+                    matchesHeight = true;
+                    break;
+                }
+            }
+        }
+
         Identifier entityId = Registry.ENTITY_TYPE.getId(entity.getType());
         boolean matchesEntity = true;
 
@@ -176,7 +195,7 @@ public class OptifineProperties {
             matchesEntity = matcher.matchesEntity(entity);
         }
 
-        return matchesEntity && isEntity && contains(ids, entityId);
+        return matchesEntity && matchesHeight && matchesBiome && isEntity && contains(ids, entityId);
     }
 
     public boolean hasReplacement(Identifier original) {
