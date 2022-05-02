@@ -129,13 +129,22 @@ public class OptifineParser {
 
             if (input.startsWith(key)) {
                 input = unescapeJava(input.substring(key.length()));
+                if (input.startsWith("!")) {
+                    Pattern regex = value.apply(input.substring(1));
+                    return text -> !regex.matcher(text).matches();
+                }
                 Pattern regex = value.apply(input);
                 return text -> regex.matcher(text).matches();
             }
         }
 
-        String unescaped = unescapeJava(input);
-        return text -> unescaped.equals(text);
+        input = unescapeJava(input);
+        if (input.startsWith("!")) {
+            String tmp = input.substring(1);
+            return text -> !tmp.equals(text);
+        }
+        String tmp = input;
+        return text -> tmp.equals(text);
     }
 
     private static interface Converter<T, TResult> {
