@@ -3,6 +3,7 @@ package opekope2.optigui.optifinecompat;
 import static opekope2.optigui.util.OptifineParser.parseList;
 import static opekope2.optigui.util.Util.contains;
 import static opekope2.optigui.util.Util.getBoolean;
+import static opekope2.optigui.util.Util.isChristmas;
 
 import java.io.IOException;
 import java.util.*;
@@ -13,10 +14,12 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.state.property.EnumProperty;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -104,14 +107,14 @@ public class OptifineProperties {
     private Boolean christmas = null;
     private Boolean ender = null;
 
-    private String name = null;
+    private RegexMatcher nameMatcher = null;
     private List<Identifier> biomes = null;
     private List<IntRange> heights = null;
     private List<IntRange> levels = null;
     private List<VillagerMatcher> professions = null;
     private List<String> colors = null;
 
-    private Identifier[] ids = new Identifier[0];
+    private Identifier[] ids = null;
 
     private OptifineProperties(ReloadContext context) {
         loadFromReloadContext(context);
@@ -139,7 +142,7 @@ public class OptifineProperties {
 
     public boolean matches(Block block, BlockEntity entity, BlockState state) {
         boolean matchesBiome = true;
-        if (biomes != null) {
+        if (biomes != null && entity != null) {
             World world = entity.getWorld();
             Identifier biome = world.getRegistryManager().get(Registry.BIOME_KEY)
                     .getId(world.getBiome(entity.getPos()).value());
@@ -147,13 +150,22 @@ public class OptifineProperties {
         }
 
         boolean matchesHeight = true;
-        if (heights != null) {
+        if (heights != null && entity != null) {
             matchesBiome = false;
             for (IntRange height : heights) {
                 if (height.test(entity.getPos().getY())) {
                     matchesHeight = true;
                     break;
                 }
+            }
+        }
+
+        boolean matchesName = true;
+        if (nameMatcher != null && entity != null) {
+            String customName = entity.createNbt().getString("CustomName");
+            if (customName != null) {
+                customName = Text.Serializer.fromJson(customName).asString();
+                matchesName = nameMatcher.matches(customName);
             }
         }
 
@@ -164,10 +176,34 @@ public class OptifineProperties {
             matchesBlock = matcher.matchesBlock(block, entity, state);
         }
 
-        return matchesBlock && matchesHeight && matchesBiome && !isEntity && contains(ids, blockId);
+        return matchesBlock && matchesHeight && matchesBiome && matchesName && !isEntity && contains(ids, blockId);
     }
 
     public boolean matches(Entity entity) {
+        boolean matchesBiome = true;
+        if (biomes != null) {
+            World world = entity.getWorld();
+            Identifier biome = world.getRegistryManager().get(Registry.BIOME_KEY)
+                    .getId(world.getBiome(entity.getBlockPos()).value());
+            matchesBiome = biomes.contains(biome);
+        }
+
+        boolean matchesHeight = true;
+        if (heights != null) {
+            matchesBiome = false;
+            for (IntRange height : heights) {
+                if (height.test(entity.getBlockPos().getY())) {
+                    matchesHeight = true;
+                    break;
+                }
+            }
+        }
+
+        boolean matchesName = true;
+        if (nameMatcher != null && entity.hasCustomName()) {
+            matchesName = nameMatcher.matches(entity.getCustomName().asString());
+        }
+
         Identifier entityId = Registry.ENTITY_TYPE.getId(entity.getType());
         boolean matchesEntity = true;
 
@@ -176,7 +212,30 @@ public class OptifineProperties {
             matchesEntity = matcher.matchesEntity(entity);
         }
 
-        return matchesEntity && isEntity && contains(ids, entityId);
+        return matchesEntity && matchesHeight && matchesBiome && matchesName && isEntity && contains(ids, entityId);
+    }
+
+    public boolean matches(PlayerEntity player) {
+        boolean matchesBiome = true;
+        if (biomes != null) {
+            World world = player.getWorld();
+            Identifier biome = world.getRegistryManager().get(Registry.BIOME_KEY)
+                    .getId(world.getBiome(player.getBlockPos()).value());
+            matchesBiome = biomes.contains(biome);
+        }
+
+        boolean matchesHeight = true;
+        if (heights != null) {
+            matchesBiome = false;
+            for (IntRange height : heights) {
+                if (height.test(player.getBlockPos().getY())) {
+                    matchesHeight = true;
+                    break;
+                }
+            }
+        }
+
+        return matchesHeight && matchesBiome && ids == null;
     }
 
     public boolean hasReplacement(Identifier original) {
@@ -188,6 +247,11 @@ public class OptifineProperties {
     }
 
     private void loadProperties(Properties props) {
+        String name = props.getProperty("name", null);
+        if (name != null) {
+            this.nameMatcher = OptifineParser.parseRegex(name);
+        }
+
         String biomes = props.getProperty("biomes", null);
         if (biomes != null) {
             this.biomes = OptifineParser.parseIdentifierList(biomes);
@@ -217,20 +281,36 @@ public class OptifineProperties {
     private void loadTextureRemaps(ReloadContext ctx) {
         String container = ctx.getProperties().getProperty("container", null);
         String texture = ctx.getProperties().getProperty("texture", null);
-        if (texture == null) {
-            return;
-        }
-        texture = texture.trim();
-
         String resFolder = ctx.getResourceId().toString();
         resFolder = resFolder.substring(resFolder.indexOf(":") + 1, resFolder.lastIndexOf("/"));
 
-        Identifier id = PathResolver.resolve(resFolder, texture);
-        Identifier foundId = ctx.findResource(id);
-        if (foundId == null) {
-            OptiGUIClient.LOGGER.warn("Resource '{}' is missing!", id.toString());
-        } else {
-            textureRemaps.put(textureAutoMapping.get(container), foundId);
+        if (texture != null) {
+            texture = texture.trim();
+
+            Identifier id = PathResolver.resolve(resFolder, texture);
+            Identifier foundId = ctx.findResource(id);
+            if (foundId == null) {
+                OptiGUIClient.LOGGER.warn("Resource '{}' is missing!", id.toString());
+            } else {
+                textureRemaps.put(textureAutoMapping.get(container), foundId);
+            }
+        }
+
+        for (var property : ctx.getProperties().entrySet()) {
+            String key = (String) property.getKey();
+            String value = (String) property.getValue();
+            String texturePathPrefix = "texture.";
+
+            if (key.startsWith(texturePathPrefix)) {
+                Identifier id = PathResolver.resolve(resFolder, value);
+                Identifier foundId = ctx.findResource(id);
+                if (foundId == null) {
+                    OptiGUIClient.LOGGER.warn("Resource '{}' is missing!", id.toString());
+                } else {
+                    String texturePath = key.substring(texturePathPrefix.length());
+                    textureRemaps.put(PathResolver.resolve("textures/gui", texturePath), foundId);
+                }
+            }
         }
     }
 
@@ -325,13 +405,14 @@ public class OptifineProperties {
         Comparable<?> type = state.getEntries().get(CHEST_TYPE_ENUM);
 
         boolean matchesLarge = large == null || (type == null || large != type.equals(ChestType.SINGLE));
+        boolean matchesChristmas = christmas == null ? true : christmas == isChristmas();
 
         if (ID.CHEST.equals(id)) {
-            return matchesLarge && !Boolean.TRUE.equals(trapped) && !Boolean.TRUE.equals(ender);
+            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.TRUE.equals(ender);
         } else if (ID.TRAPPED_CHEST.equals(id)) {
-            return matchesLarge && !Boolean.FALSE.equals(trapped) && !Boolean.TRUE.equals(ender);
+            return matchesLarge && matchesChristmas && !Boolean.FALSE.equals(trapped) && !Boolean.TRUE.equals(ender);
         } else if (ID.ENDER_CHEST.equals(id)) {
-            return matchesLarge && !Boolean.TRUE.equals(trapped) && !Boolean.FALSE.equals(ender);
+            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.FALSE.equals(ender);
         }
         return false;
     }

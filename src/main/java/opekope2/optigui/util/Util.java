@@ -1,5 +1,7 @@
 package opekope2.optigui.util;
 
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +28,9 @@ public final class Util {
     }
 
     public static <T> boolean contains(T[] array, T value) {
+        if (array == null) {
+            return false;
+        }
         for (T t : array) {
             if (value == null) {
                 if (t == null) {
@@ -36,6 +41,12 @@ public final class Util {
             }
         }
         return false;
+    }
+
+    public static boolean isChristmas() {
+        LocalDateTime date = LocalDateTime.now();
+        int day = date.getDayOfMonth();
+        return date.getMonth() == Month.DECEMBER && (day >= 24 || day <= 26);
     }
 
     private Util() {

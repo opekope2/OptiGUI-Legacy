@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import net.minecraft.util.Identifier;
 import opekope2.optigui.Replacer;
 
-@Mixin(RenderSystem.class)
+@Mixin(value = RenderSystem.class, priority = 900)
 public class RenderSystemMixin {
 	@ModifyVariable(method = "_setShaderTexture(ILnet/minecraft/util/Identifier;)V", at = @At("HEAD"), index = 1)
 	private static Identifier setShaderTextureMixin(Identifier id) {

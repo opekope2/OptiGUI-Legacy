@@ -1,9 +1,12 @@
 package opekope2.optigui.util;
 
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static opekope2.optigui.util.Util.listOf;
+import static org.apache.commons.text.StringEscapeUtils.unescapeJava;
 
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -13,7 +16,14 @@ import net.minecraft.util.Identifier;
 import opekope2.optigui.VillagerMatcher;
 
 public class OptifineParser {
-    private static final Converter<String, String> stringConverter = s -> s;
+    private static final Map<String, Function<String, Pattern>> regexParsers = new HashMap<>();
+
+    static {
+        regexParsers.put("pattern:", s -> Pattern.compile(wildcardToRegex(s)));
+        regexParsers.put("ipattern:", s -> Pattern.compile(wildcardToRegex(s), CASE_INSENSITIVE));
+        regexParsers.put("regex:", s -> Pattern.compile(s));
+        regexParsers.put("iregex:", s -> Pattern.compile(s, CASE_INSENSITIVE));
+    }
 
     public static IntRange parseRange(String input) {
         try {
@@ -25,7 +35,7 @@ public class OptifineParser {
     }
 
     public static List<String> parseList(String input) {
-        return parseList(input, stringConverter, " \t", false);
+        return parseList(input, s -> s, " \t", false);
     }
 
     private static <T> List<T> parseList(String input, Converter<String, T> converter, String separators,
@@ -50,7 +60,7 @@ public class OptifineParser {
     }
 
     private static VillagerMatcher parseProfession(String input) {
-        List<String> tokens = parseList(input, stringConverter, ":", false);
+        List<String> tokens = parseList(input, s -> s, ":", false);
         String namespace = "minecraft";
         String profession;
         List<IntRange> levels = listOf(IntRange.ANY);
@@ -79,6 +89,53 @@ public class OptifineParser {
 
     public static List<VillagerMatcher> parseProfessionList(String input) {
         return parseList(input, OptifineParser::parseProfession, " \t", true);
+    }
+
+    private static String wildcardToRegex(String widlcard) {
+        StringBuilder result = new StringBuilder("^");
+        for (int i = 0; i < widlcard.length(); ++i) {
+            final char c = widlcard.charAt(i);
+            result.append(switch (c) {
+                case '*' -> ".*";
+                case '?' -> '.';
+                case '.' -> "\\.";
+                case '\\' -> "\\\\";
+                case '+' -> "\\+";
+                case '^' -> "\\^";
+                case '$' -> "\\$";
+                case '[' -> "\\[";
+                case ']' -> "\\]";
+                case '{' -> "\\{";
+                case '}' -> "\\}";
+                case '(' -> "\\(";
+                case ')' -> "\\)";
+                case '|' -> "\\|";
+                case '/' -> "\\/";
+                default -> c;
+            });
+        }
+        result.append('$');
+        return result.toString();
+    }
+
+    public static RegexMatcher parseRegex(String input) {
+        if (input == null) {
+            return null;
+        }
+
+        for (var parser : regexParsers.entrySet()) {
+            String key = parser.getKey();
+            Function<String, Pattern> value = parser.getValue();
+
+            if (input.startsWith(key)) {
+                input = unescapeJava(input.substring(key.length()));
+                Pattern regex = value.apply(input);
+                return text -> regex.matcher(text).matches();
+            }
+        }
+
+        String unescaped = unescapeJava(input);
+        return text -> unescaped.equals(text);
     }
 
     private static interface Converter<T, TResult> {
