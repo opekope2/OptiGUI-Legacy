@@ -139,7 +139,7 @@ public class OptifineProperties {
 
     public boolean matches(Block block, BlockEntity entity, BlockState state) {
         boolean matchesBiome = true;
-        if (biomes != null) {
+        if (biomes != null && entity != null) {
             World world = entity.getWorld();
             Identifier biome = world.getRegistryManager().get(Registry.BIOME_KEY)
                     .getId(world.getBiome(entity.getPos()).value());
@@ -147,7 +147,7 @@ public class OptifineProperties {
         }
 
         boolean matchesHeight = true;
-        if (heights != null) {
+        if (heights != null && entity != null) {
             matchesBiome = false;
             for (IntRange height : heights) {
                 if (height.test(entity.getPos().getY())) {
