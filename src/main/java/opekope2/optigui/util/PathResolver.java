@@ -7,7 +7,7 @@ import java.util.StringTokenizer;
 
 import net.minecraft.util.Identifier;
 
-public class PathResolver {
+public final class PathResolver {
     public static Identifier resolve(String resourcePath, String path) throws InvalidPathException {
         Deque<String> pathStack = new ArrayDeque<>();
         StringTokenizer tokenizer = new StringTokenizer(resourcePath, "/");
@@ -15,7 +15,9 @@ public class PathResolver {
             pathStack.push(tokenizer.nextToken());
         }
 
-        tokenizer = new StringTokenizer(path, ":/", true);
+        // Because there was a resource pack with two dangling tab characters after the
+        // resource name
+        tokenizer = new StringTokenizer(path.trim(), ":/", true);
         String namespace = "minecraft";
         int nToken = -1;
 

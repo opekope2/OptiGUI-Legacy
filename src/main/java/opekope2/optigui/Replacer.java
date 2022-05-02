@@ -4,24 +4,18 @@ import static opekope2.optigui.util.Util.listOf;
 
 import java.util.List;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import opekope2.optigui.optifinecompat.OptifineProperties;
 
-public class Replacer {
+public final class Replacer {
     public static final Replacer instance = new Replacer();
 
     private List<OptifineProperties> properties = listOf();
 
-    private Block lastUsedBlock;
-    private BlockEntity lastUsedBlockEntity;
-    private BlockState lastUsedBlockState;
-    private Entity lastUsedEntity;
+    private BlockPos lastBlock;
+    private Entity lastEntity;
 
     private Replacer() {
     }
@@ -34,32 +28,25 @@ public class Replacer {
         properties.clear();
     }
 
-    public void setLastUsedBlock(Block block, BlockEntity entity, BlockState state) {
-        lastUsedBlock = block;
-        lastUsedBlockEntity = entity;
-        lastUsedBlockState = state;
-        lastUsedEntity = null;
+    public void useBlock(BlockPos block) {
+        lastBlock = block;
+        lastEntity = null;
     }
 
-    public void setLastUsedEntity(Entity entity) {
-        lastUsedBlock = null;
-        lastUsedBlockEntity = null;
-        lastUsedBlockState = null;
-        lastUsedEntity = entity;
+    public void useEntity(Entity entity) {
+        lastBlock = null;
+        lastEntity = entity;
     }
 
-    @SuppressWarnings("resource")
     public Identifier getReplacement(Identifier id) {
         for (OptifineProperties props : properties) {
-            if (lastUsedBlock != null && props.hasReplacement(id)
-                    && props.matches(lastUsedBlock, lastUsedBlockEntity, lastUsedBlockState)) {
+            if (lastBlock != null && props.hasReplacement(id) && props.matchesBlock(lastBlock)) {
                 return props.getReplacementTexture(id);
             }
-            if (lastUsedEntity != null && props.hasReplacement(id) && props.matches(lastUsedEntity)) {
+            if (lastEntity != null && props.hasReplacement(id) && props.matchesEntity(lastEntity)) {
                 return props.getReplacementTexture(id);
             }
-            PlayerEntity player = MinecraftClient.getInstance().player;
-            if (player != null && props.hasReplacement(id) && props.matches(player)) {
+            if (props.hasReplacement(id) && props.matchesAnything()) {
                 return props.getReplacementTexture(id);
             }
         }

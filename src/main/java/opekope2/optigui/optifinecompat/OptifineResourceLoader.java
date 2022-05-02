@@ -9,7 +9,7 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import opekope2.optigui.Replacer;
 
-public class OptifineResourceLoader implements SimpleSynchronousResourceReloadListener {
+public final class OptifineResourceLoader implements SimpleSynchronousResourceReloadListener {
     public static final Identifier ID = new Identifier("optigui", "optifine_resource_loader");
 
     @Override
@@ -22,7 +22,7 @@ public class OptifineResourceLoader implements SimpleSynchronousResourceReloadLi
         Replacer.instance.clear();
         for (Identifier id : manager.findResources("optifine/gui/container", path -> path.endsWith(".properties"))) {
             try {
-                ReloadContext ctx = new ReloadContext(manager, id);
+                ResourceLoadContext ctx = new ResourceLoadContext(manager, id);
                 OptifineProperties props = OptifineProperties.parse(ctx);
                 Replacer.instance.add(props);
             } catch (IOException e) {
@@ -31,12 +31,12 @@ public class OptifineResourceLoader implements SimpleSynchronousResourceReloadLi
         }
     }
 
-    public static class ReloadContext {
+    public static final class ResourceLoadContext {
         private ResourceManager resourceManager;
         private Identifier resourceId;
         private Properties properties;
 
-        private ReloadContext(ResourceManager resourceManager, Identifier resourceId) {
+        private ResourceLoadContext(ResourceManager resourceManager, Identifier resourceId) {
             this.resourceManager = resourceManager;
             this.resourceId = resourceId;
         }
@@ -54,11 +54,6 @@ public class OptifineResourceLoader implements SimpleSynchronousResourceReloadLi
             }
 
             id = new Identifier(namespace, path + ".png");
-            if (resourceManager.containsResource(id)) {
-                return id;
-            }
-
-            id = new Identifier(namespace, path + ".ogg");
             if (resourceManager.containsResource(id)) {
                 return id;
             }

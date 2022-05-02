@@ -1,4 +1,4 @@
-package opekope2.optigui;
+package opekope2.optigui.util;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.village.VillagerData;
 
-public class VillagerMatcher {
+public final class VillagerMatcher {
     private final Identifier profession;
     private final List<IntRange> levels;
 

@@ -13,9 +13,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.util.Identifier;
-import opekope2.optigui.VillagerMatcher;
 
-public class OptifineParser {
+public final class OptifineParser {
     private static final Map<String, Function<String, Pattern>> regexParsers = new HashMap<>();
 
     static {
@@ -63,25 +62,34 @@ public class OptifineParser {
         List<String> tokens = parseList(input, s -> s, ":", false);
         String namespace = "minecraft";
         String profession;
-        List<IntRange> levels = listOf(IntRange.ANY);
+        List<IntRange> levels;
 
-        if (tokens.size() == 1) {
-            profession = tokens.get(0);
-        } else if (tokens.size() == 2) {
-            char c = tokens.get(1).charAt(0);
-            if (c >= '0' && c <= '9') {
+        switch (tokens.size()) {
+            case 1 -> {
                 profession = tokens.get(0);
-                levels = parseRangeList(tokens.get(1));
-            } else {
+                levels = listOf();
+                levels.add(IntRange.ANY);
+            }
+            case 2 -> {
+                char c = tokens.get(1).charAt(0);
+                if (c >= '0' && c <= '9') {
+                    profession = tokens.get(0);
+                    levels = parseRangeList(tokens.get(1));
+                } else {
+                    namespace = tokens.get(0);
+                    profession = tokens.get(1);
+                    levels = listOf();
+                    levels.add(IntRange.ANY);
+                }
+            }
+            case 3 -> {
                 namespace = tokens.get(0);
                 profession = tokens.get(1);
+                levels = parseRangeList(tokens.get(2));
             }
-        } else if (tokens.size() == 3) {
-            namespace = tokens.get(0);
-            profession = tokens.get(1);
-            levels = parseRangeList(tokens.get(2));
-        } else {
-            return null;
+            default -> {
+                return null;
+            }
         }
 
         return new VillagerMatcher(new Identifier(namespace, profession), levels);
@@ -93,7 +101,7 @@ public class OptifineParser {
 
     private static String wildcardToRegex(String widlcard) {
         StringBuilder result = new StringBuilder("^");
-        for (int i = 0; i < widlcard.length(); ++i) {
+        for (int i = 0, l = widlcard.length(); i < l; ++i) {
             final char c = widlcard.charAt(i);
             result.append(switch (c) {
                 case '*' -> ".*";
@@ -118,7 +126,7 @@ public class OptifineParser {
         return result.toString();
     }
 
-    public static RegexMatcher parseRegex(String input) {
+    public static IRegexMatcher parseRegex(String input) {
         if (input == null) {
             return null;
         }
