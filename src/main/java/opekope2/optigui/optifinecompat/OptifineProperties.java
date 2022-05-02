@@ -17,6 +17,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.state.property.EnumProperty;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -104,7 +105,7 @@ public class OptifineProperties {
     private Boolean christmas = null;
     private Boolean ender = null;
 
-    private String name = null;
+    private RegexMatcher nameMatcher = null;
     private List<Identifier> biomes = null;
     private List<IntRange> heights = null;
     private List<IntRange> levels = null;
@@ -157,6 +158,15 @@ public class OptifineProperties {
             }
         }
 
+        boolean matchesName = true;
+        if (nameMatcher != null && entity != null) {
+            String customName = entity.createNbt().getString("CustomName");
+            if (customName != null) {
+                customName = Text.Serializer.fromJson(customName).asString();
+                matchesName = nameMatcher.matches(customName);
+            }
+        }
+
         Identifier blockId = Registry.BLOCK.getId(block);
         boolean matchesBlock = true;
         BlockMatcher matcher = blockMatchers.getOrDefault(blockId, null);
@@ -164,7 +174,7 @@ public class OptifineProperties {
             matchesBlock = matcher.matchesBlock(block, entity, state);
         }
 
-        return matchesBlock && matchesHeight && matchesBiome && !isEntity && contains(ids, blockId);
+        return matchesBlock && matchesHeight && matchesBiome && matchesName && !isEntity && contains(ids, blockId);
     }
 
     public boolean matches(Entity entity) {
@@ -187,6 +197,11 @@ public class OptifineProperties {
             }
         }
 
+        boolean matchesName = true;
+        if (nameMatcher != null && entity.hasCustomName()) {
+            matchesName = nameMatcher.matches(entity.getCustomName().asString());
+        }
+
         Identifier entityId = Registry.ENTITY_TYPE.getId(entity.getType());
         boolean matchesEntity = true;
 
@@ -195,7 +210,7 @@ public class OptifineProperties {
             matchesEntity = matcher.matchesEntity(entity);
         }
 
-        return matchesEntity && matchesHeight && matchesBiome && isEntity && contains(ids, entityId);
+        return matchesEntity && matchesHeight && matchesBiome && matchesName && isEntity && contains(ids, entityId);
     }
 
     public boolean hasReplacement(Identifier original) {
@@ -207,6 +222,11 @@ public class OptifineProperties {
     }
 
     private void loadProperties(Properties props) {
+        String name = props.getProperty("name", null);
+        if (name != null) {
+            this.nameMatcher = OptifineParser.parseRegex(name);
+        }
+
         String biomes = props.getProperty("biomes", null);
         if (biomes != null) {
             this.biomes = OptifineParser.parseIdentifierList(biomes);
