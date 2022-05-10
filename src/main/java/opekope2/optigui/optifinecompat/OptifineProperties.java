@@ -16,8 +16,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.state.property.EnumProperty;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Nameable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import opekope2.optigui.OptiGUIClient;
@@ -249,10 +249,9 @@ public final class OptifineProperties {
 
         /*if (nameMatcher != null) {
             BlockEntity entity = mc.world.getBlockEntity(pos);
-            if (entity != null) {
-                String customName = entity.createNbt().getString("CustomName");
-                if (customName.length() > 0) {
-                    customName = Text.Serializer.fromJson(customName).asString();
+            if (entity != null && entity instanceof Nameable nameable) {
+                if (nameable.hasCustomName()) {
+                    String customName = nameable.getCustomName().asString();
                     if (!nameMatcher.matches(customName)) {
                         return false;
                     }
