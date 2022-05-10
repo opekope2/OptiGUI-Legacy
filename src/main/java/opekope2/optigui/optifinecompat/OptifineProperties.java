@@ -6,6 +6,8 @@ import static opekope2.optigui.util.Util.*;
 import java.io.IOException;
 import java.util.*;
 
+import org.apache.commons.io.FilenameUtils;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.ChestType;
@@ -345,11 +347,21 @@ public final class OptifineProperties {
     }
 
     public boolean hasReplacement(Identifier original) {
-        return textureRemaps.containsKey(original);
+        if (textureRemaps.containsKey(original)) {
+            return true;
+        }
+        String namespace = original.getNamespace(), path = original.getPath();
+        path = FilenameUtils.removeExtension(path);
+        return textureRemaps.containsKey(new Identifier(namespace, path));
     }
 
     public Identifier getReplacementTexture(Identifier original) {
-        return textureRemaps.getOrDefault(original, original);
+        if (textureRemaps.containsKey(original)) {
+            return textureRemaps.getOrDefault(original, original);
+        }
+        String namespace = original.getNamespace(), path = original.getPath();
+        path = FilenameUtils.removeExtension(path);
+        return textureRemaps.getOrDefault(new Identifier(namespace, path), original);
     }
     // endregion
 
