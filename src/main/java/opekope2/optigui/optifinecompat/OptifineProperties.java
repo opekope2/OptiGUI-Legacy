@@ -247,18 +247,20 @@ public final class OptifineProperties {
             }
         }
 
-        if (nameMatcher != null) {
+        /*if (nameMatcher != null) {
             BlockEntity entity = mc.world.getBlockEntity(pos);
             if (entity != null) {
                 String customName = entity.createNbt().getString("CustomName");
-                if (customName != null) {
+                if (customName.length() > 0) {
                     customName = Text.Serializer.fromJson(customName).asString();
                     if (!nameMatcher.matches(customName)) {
                         return false;
                     }
+                } else if (!nameMatcher.matches("")) {
+                    return false;
                 }
             }
-        }
+        }*/
 
         BlockState state = mc.world.getBlockState(pos);
         Identifier blockId = Registry.BLOCK.getId(state.getBlock());
@@ -486,7 +488,7 @@ public final class OptifineProperties {
         if (professions == null) {
             return true;
         }
-        
+
         VillagerEntity villager = (VillagerEntity) entity;
         for (VillagerMatcher matcher : professions) {
             if (matcher.matchesVillager(villager)) {
