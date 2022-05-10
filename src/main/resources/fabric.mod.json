@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "optigui",
-  "version": "1.0.0",
+  "version": "1.0.1",
 
   "name": "OptiGUI",
   "description": "A drop-in replacement for OptiFine custom GUIs",
