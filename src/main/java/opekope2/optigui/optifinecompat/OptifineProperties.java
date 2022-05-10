@@ -249,7 +249,7 @@ public final class OptifineProperties {
             }
         }
 
-        /*if (nameMatcher != null) {
+        if (nameMatcher != null) {
             BlockEntity entity = mc.world.getBlockEntity(pos);
             if (entity != null && entity instanceof Nameable nameable) {
                 if (nameable.hasCustomName()) {
@@ -261,7 +261,7 @@ public final class OptifineProperties {
                     return false;
                 }
             }
-        }*/
+        }
 
         BlockState state = mc.world.getBlockState(pos);
         Identifier blockId = Registry.BLOCK.getId(state.getBlock());

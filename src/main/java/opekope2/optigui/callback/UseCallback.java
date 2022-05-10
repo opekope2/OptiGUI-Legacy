@@ -16,14 +16,18 @@ import opekope2.optigui.Replacer;
 public final class UseCallback implements UseBlockCallback, UseEntityCallback {
     @Override
     public ActionResult interact(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) {
-        Replacer.instance.useBlock(hitResult.getBlockPos());
+        if (world.isClient) {
+            Replacer.instance.useBlock(hitResult.getBlockPos());
+        }
         return ActionResult.PASS;
     }
 
     @Override
     public ActionResult interact(PlayerEntity player, World world, Hand hand, Entity entity,
             @Nullable EntityHitResult hitResult) {
-        Replacer.instance.useEntity(entity);
+        if (world.isClient) {
+            Replacer.instance.useEntity(entity);
+        }
         return ActionResult.PASS;
     }
 }
