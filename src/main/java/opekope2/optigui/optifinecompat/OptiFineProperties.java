@@ -372,13 +372,15 @@ public final class OptiFineProperties {
         christmas = getBoolean(packProps.getProperty("christmas", null));
         ender = getBoolean(packProps.getProperty("ender", null));
 
+        List<Identifier> variantList = listOf();
+        variantList.add(ID.CHEST);
         if (ender != null && ender) {
-            ids = new Identifier[] { ID.ENDER_CHEST };
-        } else if (trapped != null && trapped) {
-            ids = new Identifier[] { ID.TRAPPED_CHEST };
-        } else {
-            ids = new Identifier[] { ID.CHEST };
+            variantList.add(ID.ENDER_CHEST);
         }
+        if (trapped != null && trapped) {
+            variantList.add(ID.TRAPPED_CHEST);
+        }
+        ids = variantList.toArray(EMPTY_ID_ARRAY);
     }
 
     private void remapDispenser(Properties properties) {
