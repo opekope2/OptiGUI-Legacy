@@ -15,6 +15,7 @@ import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.passive.WanderingTraderEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.predicate.NumberRange.IntRange;
@@ -60,6 +61,7 @@ public final class OptiFineProperties {
 
         entityMatchers.put(ID.LLAMA, this::matchesLlama);
         entityMatchers.put(ID.VILLAGER, this::matchesVillager);
+        entityMatchers.put(ID.WANDERING_TRADER, this::matchesVillager);
     }
     // endregion
 
@@ -406,7 +408,7 @@ public final class OptiFineProperties {
 
     private void remapVillager(Properties properties) {
         isEntity = true;
-        ids = new Identifier[] { ID.VILLAGER };
+        ids = new Identifier[] { ID.VILLAGER, ID.WANDERING_TRADER };
     }
     // endregion
 
@@ -485,10 +487,17 @@ public final class OptiFineProperties {
             return true;
         }
 
-        VillagerEntity villager = (VillagerEntity) entity;
-        for (VillagerMatcher matcher : professions) {
-            if (matcher.matchesVillager(villager)) {
-                return true;
+        if (entity instanceof VillagerEntity villager) {
+            for (VillagerMatcher matcher : professions) {
+                if (matcher.matchesVillager(villager)) {
+                    return true;
+                }
+            }
+        } else if (entity instanceof WanderingTraderEntity trader) {
+            for (VillagerMatcher matcher : professions) {
+                if (matcher.matchesWanderingTrader(trader)) {
+                    return true;
+                }
             }
         }
         return false;

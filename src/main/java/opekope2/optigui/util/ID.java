@@ -26,6 +26,7 @@ public interface ID {
     public static final Identifier LLAMA = new Identifier("minecraft", "llama");
     public static final Identifier MULE = new Identifier("minecraft", "mule");
     public static final Identifier VILLAGER = new Identifier("minecraft", "villager");
+    public static final Identifier WANDERING_TRADER = new Identifier("minecraft", "wandering_trader");
 
     public static final Identifier WHITE_SHULKER_BOX = new Identifier("minecraft", "white_shulker_box");
     public static final Identifier ORANGE_SHULKER_BOX = new Identifier("minecraft", "orange_shulker_box");

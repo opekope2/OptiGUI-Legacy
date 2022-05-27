@@ -3,12 +3,15 @@ package opekope2.optigui.util;
 import java.util.List;
 
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.passive.WanderingTraderEntity;
 import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.village.VillagerData;
 
 public final class VillagerMatcher {
+    private static final Identifier wanderingTraderProfession = new Identifier("minecraft", "_wandering_trader");
+
     private final Identifier profession;
     private final List<IntRange> levels;
 
@@ -28,5 +31,9 @@ public final class VillagerMatcher {
             }
         }
         return false;
+    }
+
+    public boolean matchesWanderingTrader(WanderingTraderEntity trader) {
+        return wanderingTraderProfession.equals(profession);
     }
 }
