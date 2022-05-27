@@ -11,10 +11,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 
 public final class Util {
-    public static <T> List<T> listOf() {
-        return new ArrayList<>();
-    }
-
     public static Boolean getBoolean(String s) {
         if (s == null) {
             return null;

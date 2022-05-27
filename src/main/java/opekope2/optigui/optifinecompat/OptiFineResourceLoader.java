@@ -46,12 +46,11 @@ public final class OptiFineResourceLoader implements SimpleSynchronousResourceRe
                 return null;
             }
 
-            String namespace = id.getNamespace(), path = id.getPath();
-
-            id = new Identifier(namespace, path);
             if (resourceManager.containsResource(id)) {
                 return id;
             }
+            
+            String namespace = id.getNamespace(), path = id.getPath();
 
             id = new Identifier(namespace, path + ".png");
             if (resourceManager.containsResource(id)) {

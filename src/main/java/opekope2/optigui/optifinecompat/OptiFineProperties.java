@@ -325,7 +325,7 @@ public final class OptiFineProperties {
         ender = getBoolean(packProps.getProperty("ender", null));
         _barrel = getBoolean(packProps.getProperty("_barrel", null));
 
-        List<Identifier> variantList = listOf();
+        List<Identifier> variantList = new ArrayList<>();
         variantList.add(ID.CHEST);
         if (ender != null && ender) {
             variantList.add(ID.ENDER_CHEST);
@@ -366,7 +366,7 @@ public final class OptiFineProperties {
 
     private void remapShulkerBlock(Properties properties) {
         String colors = properties.getProperty("colors", null);
-        List<Identifier> ids = listOf();
+        List<Identifier> ids = new ArrayList<>();
 
         if (colors == null) {
             for (Identifier shulker : COLOR_TO_SHULKER_MAPPING.values()) {

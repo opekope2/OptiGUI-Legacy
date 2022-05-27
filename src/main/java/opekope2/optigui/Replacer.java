@@ -1,7 +1,6 @@
 package opekope2.optigui;
 
-import static opekope2.optigui.util.Util.listOf;
-
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.entity.Entity;
@@ -12,7 +11,7 @@ import opekope2.optigui.optifinecompat.OptiFineProperties;
 public final class Replacer {
     public static final Replacer instance = new Replacer();
 
-    private List<OptiFineProperties> properties = listOf();
+    private List<OptiFineProperties> properties = new ArrayList<>();
 
     private BlockPos lastBlock;
     private Entity lastEntity;

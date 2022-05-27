@@ -1,7 +1,6 @@
 package opekope2.optigui.util;
 
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
-import static opekope2.optigui.util.Util.listOf;
 import static org.apache.commons.text.StringEscapeUtils.unescapeJava;
 
 import java.util.*;
@@ -40,7 +39,7 @@ public final class OptiFineParser {
     private static <T> List<T> parseList(String input, Converter<String, T> converter, String separators,
             Boolean removeNulls) {
         StringTokenizer tokenizer = new StringTokenizer(input, separators);
-        List<T> result = listOf();
+        List<T> result = new ArrayList<>();
         while (tokenizer.hasMoreTokens()) {
             T converted = converter.convert(tokenizer.nextToken());
             if (!removeNulls || converted != null) {
@@ -67,7 +66,7 @@ public final class OptiFineParser {
         switch (tokens.size()) {
             case 1 -> {
                 profession = tokens.get(0);
-                levels = listOf();
+                levels = new ArrayList<>();
                 levels.add(IntRange.ANY);
             }
             case 2 -> {
@@ -78,7 +77,7 @@ public final class OptiFineParser {
                 } else {
                     namespace = tokens.get(0);
                     profession = tokens.get(1);
-                    levels = listOf();
+                    levels = new ArrayList<>();
                     levels.add(IntRange.ANY);
                 }
             }
