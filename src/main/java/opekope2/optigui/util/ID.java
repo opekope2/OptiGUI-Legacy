@@ -4,6 +4,7 @@ import net.minecraft.util.Identifier;
 
 public final class ID {
     public static final Identifier ANVIL = new Identifier("minecraft", "anvil");
+    public static final Identifier BARREL = new Identifier("minecraft", "barrel");
     public static final Identifier BEACON = new Identifier("minecraft", "beacon");
     public static final Identifier BREWING_STAND = new Identifier("minecraft", "brewing_stand");
     public static final Identifier CHEST = new Identifier("minecraft", "chest");

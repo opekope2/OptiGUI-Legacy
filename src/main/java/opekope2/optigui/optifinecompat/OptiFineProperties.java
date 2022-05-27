@@ -113,6 +113,7 @@ public final class OptiFineProperties {
         blockMatchers.put(ID.CHEST, this::matchesChest);
         blockMatchers.put(ID.TRAPPED_CHEST, this::matchesChest);
         blockMatchers.put(ID.ENDER_CHEST, this::matchesChest);
+        blockMatchers.put(ID.BARREL, this::matchesChest);
         blockMatchers.put(ID.BEACON, this::matchesBeacon);
 
         entityMatchers.put(ID.LLAMA, this::matchesLlama);
@@ -128,6 +129,10 @@ public final class OptiFineProperties {
     private Boolean trapped = null;
     private Boolean christmas = null;
     private Boolean ender = null;
+
+    // region OptiFine extensions
+    private Boolean _barrel = null;
+    // endregion
 
     private IRegexMatcher nameMatcher = null;
     private List<Identifier> biomes = null;
@@ -371,6 +376,7 @@ public final class OptiFineProperties {
         trapped = getBoolean(packProps.getProperty("trapped", null));
         christmas = getBoolean(packProps.getProperty("christmas", null));
         ender = getBoolean(packProps.getProperty("ender", null));
+        _barrel = getBoolean(packProps.getProperty("_barrel", null));
 
         List<Identifier> variantList = listOf();
         variantList.add(ID.CHEST);
@@ -379,6 +385,9 @@ public final class OptiFineProperties {
         }
         if (trapped != null && trapped) {
             variantList.add(ID.TRAPPED_CHEST);
+        }
+        if (_barrel != null && _barrel) {
+            variantList.add(ID.BARREL);
         }
         ids = variantList.toArray(EMPTY_ID_ARRAY);
     }
@@ -452,11 +461,17 @@ public final class OptiFineProperties {
         boolean matchesChristmas = christmas == null ? true : christmas == isChristmas();
 
         if (ID.CHEST.equals(id)) {
-            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.TRUE.equals(ender);
+            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.TRUE.equals(ender)
+                    && !Boolean.TRUE.equals(_barrel);
         } else if (ID.TRAPPED_CHEST.equals(id)) {
-            return matchesLarge && matchesChristmas && !Boolean.FALSE.equals(trapped) && !Boolean.TRUE.equals(ender);
+            return matchesLarge && matchesChristmas && !Boolean.FALSE.equals(trapped) && !Boolean.TRUE.equals(ender)
+                    && !Boolean.TRUE.equals(_barrel);
         } else if (ID.ENDER_CHEST.equals(id)) {
-            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.FALSE.equals(ender);
+            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.FALSE.equals(ender)
+                    && !Boolean.TRUE.equals(_barrel);
+        } else if (ID.BARREL.equals(id)) {
+            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.TRUE.equals(ender)
+                    && !Boolean.FALSE.equals(_barrel);
         }
         return false;
     }
