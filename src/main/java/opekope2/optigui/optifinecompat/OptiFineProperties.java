@@ -5,6 +5,7 @@ import static opekope2.optigui.util.Util.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -33,7 +34,7 @@ public final class OptiFineProperties {
 
     private static final EnumProperty<ChestType> CHEST_TYPE_ENUM = EnumProperty.of("type", ChestType.class);
 
-    private static final Map<String, Identifier> textureAutoMapping = new HashMap<>();
+    private static final Map<String, Function<Properties, Identifier>> textureRemappers = new HashMap<>();
     private static final Map<String, Identifier[]> idAutoMapping = new HashMap<>();
     private static final Map<String, String> carpetColorMapping = new HashMap<>();
     private static final Map<String, Identifier> shulkerColorMapping = new HashMap<>();
@@ -46,19 +47,19 @@ public final class OptiFineProperties {
 
     // region Initializers
     static {
-        textureAutoMapping.put("anvil", BuiltinTexturePath.ANVIL);
-        textureAutoMapping.put("beacon", BuiltinTexturePath.BEACON);
-        textureAutoMapping.put("brewing_stand", BuiltinTexturePath.BREWING_STAND);
-        textureAutoMapping.put("chest", BuiltinTexturePath.CHEST);
-        textureAutoMapping.put("crafting", BuiltinTexturePath.CRAFTING_TABLE);
-        textureAutoMapping.put("dispenser", BuiltinTexturePath.DISPENSER);
-        textureAutoMapping.put("enchantment", BuiltinTexturePath.ENCHANTING_TABLE);
-        textureAutoMapping.put("furnace", BuiltinTexturePath.FURNACE);
-        textureAutoMapping.put("hopper", BuiltinTexturePath.HOPPER);
-        textureAutoMapping.put("shulker_box", BuiltinTexturePath.SHULKER_BOX);
+        textureRemappers.put("anvil", p -> BuiltinTexturePath.ANVIL);
+        textureRemappers.put("beacon", p -> BuiltinTexturePath.BEACON);
+        textureRemappers.put("brewing_stand", p -> BuiltinTexturePath.BREWING_STAND);
+        textureRemappers.put("chest", p -> BuiltinTexturePath.CHEST);
+        textureRemappers.put("crafting", p -> BuiltinTexturePath.CRAFTING_TABLE);
+        textureRemappers.put("dispenser", p -> BuiltinTexturePath.DISPENSER);
+        textureRemappers.put("enchantment", p -> BuiltinTexturePath.ENCHANTING_TABLE);
+        textureRemappers.put("furnace", p -> BuiltinTexturePath.FURNACE);
+        textureRemappers.put("hopper", p -> BuiltinTexturePath.HOPPER);
+        textureRemappers.put("shulker_box", p -> BuiltinTexturePath.SHULKER_BOX);
 
-        textureAutoMapping.put("horse", BuiltinTexturePath.HORSE);
-        textureAutoMapping.put("villager", BuiltinTexturePath.VILLAGER);
+        textureRemappers.put("horse", p -> BuiltinTexturePath.HORSE);
+        textureRemappers.put("villager", p -> BuiltinTexturePath.VILLAGER);
 
         idAutoMapping.put("anvil", new Identifier[] { ID.ANVIL, ID.CHIPPED_ANVIL, ID.DAMAGED_ANVIL });
         idAutoMapping.put("beacon", new Identifier[] { ID.BEACON });
@@ -207,8 +208,7 @@ public final class OptiFineProperties {
             if (foundId == null) {
                 OptiGUIClient.logger.warn("Resource '{}' is missing!", id.toString());
             } else {
-                String container = ctx.getProperties().getProperty("container", null);
-                textureRemaps.put(textureAutoMapping.get(container), foundId);
+                textureRemaps.put(getTextureToRemap(ctx.getProperties()), foundId);
             }
         }
 
@@ -227,6 +227,12 @@ public final class OptiFineProperties {
                 }
             }
         }
+    }
+
+    private Identifier getTextureToRemap(Properties properties) {
+        String container = properties.getProperty("container", null);
+        Function<Properties, Identifier> remapper = textureRemappers.get(container);
+        return remapper != null ? remapper.apply(properties) : null;
     }
     // endregion
 
