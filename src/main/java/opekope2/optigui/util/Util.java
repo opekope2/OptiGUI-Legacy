@@ -79,13 +79,18 @@ public final class Util {
         TEXTURE_REMAPPERS.put("anvil", p -> BuiltinTexturePath.ANVIL);
         TEXTURE_REMAPPERS.put("beacon", p -> BuiltinTexturePath.BEACON);
         TEXTURE_REMAPPERS.put("brewing_stand", p -> BuiltinTexturePath.BREWING_STAND);
+        TEXTURE_REMAPPERS.put("_cartography_table", p -> BuiltinTexturePath.CARTOGRAPHY_TABLE);
         TEXTURE_REMAPPERS.put("chest", p -> BuiltinTexturePath.CHEST);
         TEXTURE_REMAPPERS.put("crafting", p -> BuiltinTexturePath.CRAFTING_TABLE);
         TEXTURE_REMAPPERS.put("dispenser", p -> BuiltinTexturePath.DISPENSER);
         TEXTURE_REMAPPERS.put("enchantment", p -> BuiltinTexturePath.ENCHANTING_TABLE);
         TEXTURE_REMAPPERS.put("furnace", Util::remapFurnaceTexture);
+        TEXTURE_REMAPPERS.put("_grindstone", p -> BuiltinTexturePath.GRINDSTONE);
         TEXTURE_REMAPPERS.put("hopper", p -> BuiltinTexturePath.HOPPER);
+        TEXTURE_REMAPPERS.put("_loom", p -> BuiltinTexturePath.LOOM);
         TEXTURE_REMAPPERS.put("shulker_box", p -> BuiltinTexturePath.SHULKER_BOX);
+        TEXTURE_REMAPPERS.put("_smithing_table", p -> BuiltinTexturePath.SMITHING_TABLE);
+        TEXTURE_REMAPPERS.put("_stonecutter", p -> BuiltinTexturePath.STONECUTTER);
 
         TEXTURE_REMAPPERS.put("horse", p -> BuiltinTexturePath.HORSE);
         TEXTURE_REMAPPERS.put("villager", p -> BuiltinTexturePath.VILLAGER);
