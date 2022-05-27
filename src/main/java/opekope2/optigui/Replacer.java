@@ -1,18 +1,17 @@
 package opekope2.optigui;
 
-import static opekope2.optigui.util.Util.listOf;
-
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import opekope2.optigui.optifinecompat.OptifineProperties;
+import opekope2.optigui.optifinecompat.OptiFineProperties;
 
 public final class Replacer {
     public static final Replacer instance = new Replacer();
 
-    private List<OptifineProperties> properties = listOf();
+    private List<OptiFineProperties> properties = new ArrayList<>();
 
     private BlockPos lastBlock;
     private Entity lastEntity;
@@ -20,7 +19,7 @@ public final class Replacer {
     private Replacer() {
     }
 
-    public void add(OptifineProperties props) {
+    public void add(OptiFineProperties props) {
         properties.add(props);
     }
 
@@ -39,7 +38,7 @@ public final class Replacer {
     }
 
     public Identifier getReplacement(Identifier id) {
-        for (OptifineProperties props : properties) {
+        for (OptiFineProperties props : properties) {
             if (lastBlock != null && props.hasReplacement(id) && props.matchesBlock(lastBlock)) {
                 return props.getReplacementTexture(id);
             }

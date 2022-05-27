@@ -1,10 +1,11 @@
 package opekope2.optigui.optifinecompat;
 
-import static opekope2.optigui.util.OptifineParser.parseList;
+import static opekope2.optigui.util.OptiFineParser.parseList;
 import static opekope2.optigui.util.Util.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -14,6 +15,7 @@ import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.passive.WanderingTraderEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.predicate.NumberRange.IntRange;
@@ -23,100 +25,43 @@ import net.minecraft.util.Nameable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import opekope2.optigui.OptiGUIClient;
-import opekope2.optigui.optifinecompat.OptifineResourceLoader.ResourceLoadContext;
+import opekope2.optigui.optifinecompat.OptiFineResourceLoader.ResourceLoadContext;
 import opekope2.optigui.util.*;
 
 // https://optifine.readthedocs.io/custom_guis.html
 // https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/custom_guis.properties
-public final class OptifineProperties {
+public final class OptiFineProperties {
     private static final Identifier[] EMPTY_ID_ARRAY = new Identifier[0];
 
     private static final EnumProperty<ChestType> CHEST_TYPE_ENUM = EnumProperty.of("type", ChestType.class);
 
-    private static final Map<String, Identifier> textureAutoMapping = new HashMap<>();
-    private static final Map<String, Identifier[]> idAutoMapping = new HashMap<>();
-    private static final Map<String, String> carpetColorMapping = new HashMap<>();
-    private static final Map<String, Identifier> shulkerColorMapping = new HashMap<>();
-
-    private final Map<String, ContainerRemapper> idRemapper = new HashMap<>();
+    private final Map<String, ContainerRemapper> remappers = new HashMap<>();
     private final Map<Identifier, BlockMatcher> blockMatchers = new HashMap<>();
     private final Map<Identifier, EntityMatcher> entityMatchers = new HashMap<>();
 
     private static final String texturePathPrefix = "texture.";
 
     // region Initializers
-    static {
-        textureAutoMapping.put("anvil", BuiltinTexturePath.ANVIL);
-        textureAutoMapping.put("beacon", BuiltinTexturePath.BEACON);
-        textureAutoMapping.put("brewing_stand", BuiltinTexturePath.BREWING_STAND);
-        textureAutoMapping.put("chest", BuiltinTexturePath.CHEST);
-        textureAutoMapping.put("crafting", BuiltinTexturePath.CRAFTING_TABLE);
-        textureAutoMapping.put("dispenser", BuiltinTexturePath.DISPENSER);
-        textureAutoMapping.put("enchantment", BuiltinTexturePath.ENCHANTING_TABLE);
-        textureAutoMapping.put("furnace", BuiltinTexturePath.FURNACE);
-        textureAutoMapping.put("hopper", BuiltinTexturePath.HOPPER);
-        textureAutoMapping.put("shulker_box", BuiltinTexturePath.SHULKER_BOX);
-
-        textureAutoMapping.put("horse", BuiltinTexturePath.HORSE);
-        textureAutoMapping.put("villager", BuiltinTexturePath.VILLAGER);
-
-        idAutoMapping.put("anvil", new Identifier[] { ID.ANVIL, ID.CHIPPED_ANVIL, ID.DAMAGED_ANVIL });
-        idAutoMapping.put("beacon", new Identifier[] { ID.BEACON });
-        idAutoMapping.put("brewing_stand", new Identifier[] { ID.BREWING_STAND });
-        idAutoMapping.put("crafting", new Identifier[] { ID.CRAFTING_TABLE });
-        idAutoMapping.put("enchantment", new Identifier[] { ID.ENCHANTING_TABLE });
-        idAutoMapping.put("furnace", new Identifier[] { ID.FURNACE }); // blast, smoker?
-        idAutoMapping.put("hopper", new Identifier[] { ID.HOPPER });
-
-        carpetColorMapping.put("minecraft:white_carpet", "white");
-        carpetColorMapping.put("minecraft:orange_carpet", "orange");
-        carpetColorMapping.put("minecraft:magenta_carpet", "magenta");
-        carpetColorMapping.put("minecraft:light_blue_carpet", "light_blue");
-        carpetColorMapping.put("minecraft:yellow_carpet", "yellow");
-        carpetColorMapping.put("minecraft:lime_carpet", "lime");
-        carpetColorMapping.put("minecraft:pink_carpet", "pink");
-        carpetColorMapping.put("minecraft:gray_carpet", "gray");
-        carpetColorMapping.put("minecraft:light_gray_carpet", "light_gray");
-        carpetColorMapping.put("minecraft:cyan_carpet", "cyan");
-        carpetColorMapping.put("minecraft:purple_carpet", "purple");
-        carpetColorMapping.put("minecraft:blue_carpet", "blue");
-        carpetColorMapping.put("minecraft:brown_carpet", "brown");
-        carpetColorMapping.put("minecraft:green_carpet", "green");
-        carpetColorMapping.put("minecraft:red_carpet", "red");
-        carpetColorMapping.put("minecraft:black_carpet", "black");
-
-        shulkerColorMapping.put("white", ID.WHITE_SHULKER_BOX);
-        shulkerColorMapping.put("orange", ID.ORANGE_SHULKER_BOX);
-        shulkerColorMapping.put("magenta", ID.MAGENTA_SHULKER_BOX);
-        shulkerColorMapping.put("light_blue", ID.LIGHT_BLUE_SHULKER_BOX);
-        shulkerColorMapping.put("yellow", ID.YELLOW_SHULKER_BOX);
-        shulkerColorMapping.put("lime", ID.LIME_SHULKER_BOX);
-        shulkerColorMapping.put("pink", ID.PINK_SHULKER_BOX);
-        shulkerColorMapping.put("gray", ID.GRAY_SHULKER_BOX);
-        shulkerColorMapping.put("light_gray", ID.LIGHT_GRAY_SHULKER_BOX);
-        shulkerColorMapping.put("cyan", ID.CYAN_SHULKER_BOX);
-        shulkerColorMapping.put("purple", ID.PURPLE_SHULKER_BOX);
-        shulkerColorMapping.put("blue", ID.BLUE_SHULKER_BOX);
-        shulkerColorMapping.put("brown", ID.BROWN_SHULKER_BOX);
-        shulkerColorMapping.put("green", ID.GREEN_SHULKER_BOX);
-        shulkerColorMapping.put("red", ID.RED_SHULKER_BOX);
-        shulkerColorMapping.put("black", ID.BLACK_SHULKER_BOX);
-    }
-
     {
-        idRemapper.put("chest", this::remapChest);
-        idRemapper.put("dispenser", this::remapDispenser);
-        idRemapper.put("shulker_box", this::remapShulkerBlock);
-        idRemapper.put("horse", this::remapHorse);
-        idRemapper.put("villager", this::remapVillager);
+        remappers.put("chest", this::remapChest);
+        remappers.put("dispenser", this::remapDispenser);
+        remappers.put("furnace", this::remapFurnace);
+        remappers.put("shulker_box", this::remapShulkerBlock);
+        remappers.put("horse", this::remapHorse);
+        remappers.put("villager", this::remapVillager);
 
-        blockMatchers.put(ID.CHEST, this::matchesChest);
-        blockMatchers.put(ID.TRAPPED_CHEST, this::matchesChest);
-        blockMatchers.put(ID.ENDER_CHEST, this::matchesChest);
+        blockMatchers.put(ID.BARREL, this::matchesChest);
         blockMatchers.put(ID.BEACON, this::matchesBeacon);
+        blockMatchers.put(ID.BLAST_FURNACE, this::matchesFurnace);
+        blockMatchers.put(ID.CHEST, this::matchesChest);
+        blockMatchers.put(ID.ENDER_CHEST, this::matchesChest);
+        blockMatchers.put(ID.FURNACE, this::matchesFurnace);
+        blockMatchers.put(ID.SMOKER, this::matchesFurnace);
+        blockMatchers.put(ID.TRAPPED_CHEST, this::matchesChest);
 
         entityMatchers.put(ID.LLAMA, this::matchesLlama);
         entityMatchers.put(ID.VILLAGER, this::matchesVillager);
+        entityMatchers.put(ID.WANDERING_TRADER, this::matchesVillager);
     }
     // endregion
 
@@ -129,6 +74,10 @@ public final class OptifineProperties {
     private Boolean christmas = null;
     private Boolean ender = null;
 
+    // region OptiFine extensions
+    private Boolean _barrel = null;
+    // endregion
+
     private IRegexMatcher nameMatcher = null;
     private List<Identifier> biomes = null;
     private List<IntRange> heights = null;
@@ -139,18 +88,18 @@ public final class OptifineProperties {
     private Identifier[] ids = null;
 
     // region Construction
-    private OptifineProperties(ResourceLoadContext context) {
+    private OptiFineProperties(ResourceLoadContext context) {
         String container = context.getProperties().getProperty("container", null);
         if (container == null) {
             return;
         }
 
-        Identifier[] ids = idAutoMapping.getOrDefault(container, null);
+        Identifier[] ids = ID_AUTO_MAPPING.getOrDefault(container, null);
         if (ids != null) {
             this.ids = ids;
         }
 
-        ContainerRemapper remapper = idRemapper.getOrDefault(container, null);
+        ContainerRemapper remapper = remappers.getOrDefault(container, null);
         if (remapper != null) {
             remapper.remapContainer(context.getProperties());
         }
@@ -162,32 +111,32 @@ public final class OptifineProperties {
     private void loadProperties(Properties props) {
         String name = props.getProperty("name", null);
         if (name != null) {
-            this.nameMatcher = OptifineParser.parseRegex(name);
+            this.nameMatcher = OptiFineParser.parseRegex(name);
         }
 
         String biomes = props.getProperty("biomes", null);
         if (biomes != null) {
-            this.biomes = OptifineParser.parseIdentifierList(biomes);
+            this.biomes = OptiFineParser.parseIdentifierList(biomes);
         }
 
         String heights = props.getProperty("heights", null);
         if (heights != null) {
-            this.heights = OptifineParser.parseRangeList(heights);
+            this.heights = OptiFineParser.parseRangeList(heights);
         }
 
         String levels = props.getProperty("levels", null);
         if (levels != null) {
-            this.levels = OptifineParser.parseRangeList(levels);
+            this.levels = OptiFineParser.parseRangeList(levels);
         }
 
         String professions = props.getProperty("professions", null);
         if (professions != null) {
-            this.professions = OptifineParser.parseProfessionList(professions);
+            this.professions = OptiFineParser.parseProfessionList(professions);
         }
 
         String colors = props.getProperty("colors", null);
         if (colors != null) {
-            this.colors = OptifineParser.parseList(colors);
+            this.colors = OptiFineParser.parseList(colors);
         }
     }
 
@@ -202,8 +151,7 @@ public final class OptifineProperties {
             if (foundId == null) {
                 OptiGUIClient.logger.warn("Resource '{}' is missing!", id.toString());
             } else {
-                String container = ctx.getProperties().getProperty("container", null);
-                textureRemaps.put(textureAutoMapping.get(container), foundId);
+                textureRemaps.put(getTextureToRemap(ctx.getProperties()), foundId);
             }
         }
 
@@ -222,6 +170,12 @@ public final class OptifineProperties {
                 }
             }
         }
+    }
+
+    private Identifier getTextureToRemap(Properties properties) {
+        String container = properties.getProperty("container", null);
+        Function<Properties, Identifier> remapper = TEXTURE_REMAPPERS.get(container);
+        return remapper != null ? remapper.apply(properties) : null;
     }
     // endregion
 
@@ -371,14 +325,20 @@ public final class OptifineProperties {
         trapped = getBoolean(packProps.getProperty("trapped", null));
         christmas = getBoolean(packProps.getProperty("christmas", null));
         ender = getBoolean(packProps.getProperty("ender", null));
+        _barrel = getBoolean(packProps.getProperty("_barrel", null));
 
+        List<Identifier> variantList = new ArrayList<>();
+        variantList.add(ID.CHEST);
         if (ender != null && ender) {
-            ids = new Identifier[] { ID.ENDER_CHEST };
-        } else if (trapped != null && trapped) {
-            ids = new Identifier[] { ID.TRAPPED_CHEST };
-        } else {
-            ids = new Identifier[] { ID.CHEST };
+            variantList.add(ID.ENDER_CHEST);
         }
+        if (trapped != null && trapped) {
+            variantList.add(ID.TRAPPED_CHEST);
+        }
+        if (_barrel != null && _barrel) {
+            variantList.add(ID.BARREL);
+        }
+        ids = variantList.toArray(EMPTY_ID_ARRAY);
     }
 
     private void remapDispenser(Properties properties) {
@@ -393,18 +353,31 @@ public final class OptifineProperties {
                 };
     }
 
+    private void remapFurnace(Properties properties) {
+        String variants = properties.getProperty("variants", null);
+
+        ids = variants == null
+                ? new Identifier[] { ID.FURNACE, ID.BLAST_FURNACE, ID.SMOKER }
+                : switch (variants) {
+                    case "", "_furnace" -> new Identifier[] { ID.FURNACE };
+                    case "_blast", "_blast_furnace" -> new Identifier[] { ID.BLAST_FURNACE };
+                    case "_smoker" -> new Identifier[] { ID.SMOKER };
+                    default -> ids;
+                };
+    }
+
     private void remapShulkerBlock(Properties properties) {
         String colors = properties.getProperty("colors", null);
-        List<Identifier> ids = listOf();
+        List<Identifier> ids = new ArrayList<>();
 
         if (colors == null) {
-            for (Identifier shulker : shulkerColorMapping.values()) {
+            for (Identifier shulker : COLOR_TO_SHULKER_MAPPING.values()) {
                 ids.add(shulker);
             }
         } else {
             List<String> colorList = parseList(colors);
             for (String color : colorList) {
-                Identifier shulker = shulkerColorMapping.getOrDefault(color, null);
+                Identifier shulker = COLOR_TO_SHULKER_MAPPING.getOrDefault(color, null);
                 if (shulker != null) {
                     ids.add(shulker);
                 }
@@ -435,7 +408,7 @@ public final class OptifineProperties {
 
     private void remapVillager(Properties properties) {
         isEntity = true;
-        ids = new Identifier[] { ID.VILLAGER };
+        ids = new Identifier[] { ID.VILLAGER, ID.WANDERING_TRADER };
     }
     // endregion
 
@@ -450,11 +423,17 @@ public final class OptifineProperties {
         boolean matchesChristmas = christmas == null ? true : christmas == isChristmas();
 
         if (ID.CHEST.equals(id)) {
-            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.TRUE.equals(ender);
+            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.TRUE.equals(ender)
+                    && !Boolean.TRUE.equals(_barrel);
         } else if (ID.TRAPPED_CHEST.equals(id)) {
-            return matchesLarge && matchesChristmas && !Boolean.FALSE.equals(trapped) && !Boolean.TRUE.equals(ender);
+            return matchesLarge && matchesChristmas && !Boolean.FALSE.equals(trapped) && !Boolean.TRUE.equals(ender)
+                    && !Boolean.TRUE.equals(_barrel);
         } else if (ID.ENDER_CHEST.equals(id)) {
-            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.FALSE.equals(ender);
+            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.FALSE.equals(ender)
+                    && !Boolean.TRUE.equals(_barrel);
+        } else if (ID.BARREL.equals(id)) {
+            return matchesLarge && matchesChristmas && !Boolean.TRUE.equals(trapped) && !Boolean.TRUE.equals(ender)
+                    && !Boolean.FALSE.equals(_barrel);
         }
         return false;
     }
@@ -475,6 +454,14 @@ public final class OptifineProperties {
         }
         return false;
     }
+
+    private boolean matchesFurnace(BlockPos pos) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        BlockState state = mc.world.getBlockState(pos);
+        Identifier id = Registry.BLOCK.getId(state.getBlock());
+
+        return ID.BLAST_FURNACE.equals(id) || ID.FURNACE.equals(id) || ID.SMOKER.equals(id);
+    }
     // endregion
 
     // region Entity matchers
@@ -489,7 +476,7 @@ public final class OptifineProperties {
                 return colors.isEmpty();
             }
 
-            carpet = carpetColorMapping.getOrDefault(carpet, null);
+            carpet = CARPET_TO_COLOR_MAPPING.getOrDefault(carpet, null);
             return carpet != null && colors.contains(carpet);
         }
         return false;
@@ -500,21 +487,28 @@ public final class OptifineProperties {
             return true;
         }
 
-        VillagerEntity villager = (VillagerEntity) entity;
-        for (VillagerMatcher matcher : professions) {
-            if (matcher.matchesVillager(villager)) {
-                return true;
+        if (entity instanceof VillagerEntity villager) {
+            for (VillagerMatcher matcher : professions) {
+                if (matcher.matchesVillager(villager)) {
+                    return true;
+                }
+            }
+        } else if (entity instanceof WanderingTraderEntity trader) {
+            for (VillagerMatcher matcher : professions) {
+                if (matcher.matchesWanderingTrader(trader)) {
+                    return true;
+                }
             }
         }
         return false;
     }
     // endregion
 
-    public static OptifineProperties parse(ResourceLoadContext context) throws IOException {
+    public static OptiFineProperties parse(ResourceLoadContext context) throws IOException {
         Properties properties = new Properties();
         properties.load(context.getResource().getInputStream());
         context.setProperties(properties);
-        return new OptifineProperties(context);
+        return new OptiFineProperties(context);
     }
 
     private static interface ContainerRemapper {

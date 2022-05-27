@@ -9,7 +9,7 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import opekope2.optigui.Replacer;
 
-public final class OptifineResourceLoader implements SimpleSynchronousResourceReloadListener {
+public final class OptiFineResourceLoader implements SimpleSynchronousResourceReloadListener {
     public static final Identifier ID = new Identifier("optigui", "optifine_resource_loader");
 
     @Override
@@ -23,7 +23,7 @@ public final class OptifineResourceLoader implements SimpleSynchronousResourceRe
         for (Identifier id : manager.findResources("optifine/gui/container", path -> path.endsWith(".properties"))) {
             try {
                 ResourceLoadContext ctx = new ResourceLoadContext(manager, id);
-                OptifineProperties props = OptifineProperties.parse(ctx);
+                OptiFineProperties props = OptiFineProperties.parse(ctx);
                 Replacer.instance.add(props);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -46,12 +46,11 @@ public final class OptifineResourceLoader implements SimpleSynchronousResourceRe
                 return null;
             }
 
-            String namespace = id.getNamespace(), path = id.getPath();
-
-            id = new Identifier(namespace, path);
             if (resourceManager.containsResource(id)) {
                 return id;
             }
+            
+            String namespace = id.getNamespace(), path = id.getPath();
 
             id = new Identifier(namespace, path + ".png");
             if (resourceManager.containsResource(id)) {
