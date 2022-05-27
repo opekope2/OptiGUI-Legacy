@@ -14,7 +14,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.util.Identifier;
 
-public final class OptifineParser {
+public final class OptiFineParser {
     private static final Map<String, Function<String, Pattern>> regexParsers = new HashMap<>();
 
     static {
@@ -55,7 +55,7 @@ public final class OptifineParser {
     }
 
     public static List<IntRange> parseRangeList(String input) {
-        return parseList(input, OptifineParser::parseRange, " \t", true);
+        return parseList(input, OptiFineParser::parseRange, " \t", true);
     }
 
     private static VillagerMatcher parseProfession(String input) {
@@ -96,7 +96,7 @@ public final class OptifineParser {
     }
 
     public static List<VillagerMatcher> parseProfessionList(String input) {
-        return parseList(input, OptifineParser::parseProfession, " \t", true);
+        return parseList(input, OptiFineParser::parseProfession, " \t", true);
     }
 
     private static String wildcardToRegex(String widlcard) {
@@ -159,6 +159,6 @@ public final class OptifineParser {
         public TResult convert(T input);
     }
 
-    private OptifineParser() {
+    private OptiFineParser() {
     }
 }

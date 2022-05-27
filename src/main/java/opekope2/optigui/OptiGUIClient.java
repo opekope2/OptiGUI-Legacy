@@ -9,7 +9,7 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.resource.ResourceType;
 import opekope2.optigui.callback.UseCallback;
-import opekope2.optigui.optifinecompat.OptifineResourceLoader;
+import opekope2.optigui.optifinecompat.OptiFineResourceLoader;
 
 public final class OptiGUIClient implements ClientModInitializer {
 	// This logger is used to write text to the console and the log file.
@@ -19,7 +19,7 @@ public final class OptiGUIClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new OptifineResourceLoader());
+		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new OptiFineResourceLoader());
 		UseCallback useCallback = new UseCallback();
 		UseBlockCallback.EVENT.register(useCallback);
 		UseEntityCallback.EVENT.register(useCallback);

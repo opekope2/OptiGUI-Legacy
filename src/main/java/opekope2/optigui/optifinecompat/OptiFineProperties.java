@@ -1,6 +1,6 @@
 package opekope2.optigui.optifinecompat;
 
-import static opekope2.optigui.util.OptifineParser.parseList;
+import static opekope2.optigui.util.OptiFineParser.parseList;
 import static opekope2.optigui.util.Util.*;
 
 import java.io.IOException;
@@ -23,12 +23,12 @@ import net.minecraft.util.Nameable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import opekope2.optigui.OptiGUIClient;
-import opekope2.optigui.optifinecompat.OptifineResourceLoader.ResourceLoadContext;
+import opekope2.optigui.optifinecompat.OptiFineResourceLoader.ResourceLoadContext;
 import opekope2.optigui.util.*;
 
 // https://optifine.readthedocs.io/custom_guis.html
 // https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/custom_guis.properties
-public final class OptifineProperties {
+public final class OptiFineProperties {
     private static final Identifier[] EMPTY_ID_ARRAY = new Identifier[0];
 
     private static final EnumProperty<ChestType> CHEST_TYPE_ENUM = EnumProperty.of("type", ChestType.class);
@@ -139,7 +139,7 @@ public final class OptifineProperties {
     private Identifier[] ids = null;
 
     // region Construction
-    private OptifineProperties(ResourceLoadContext context) {
+    private OptiFineProperties(ResourceLoadContext context) {
         String container = context.getProperties().getProperty("container", null);
         if (container == null) {
             return;
@@ -162,32 +162,32 @@ public final class OptifineProperties {
     private void loadProperties(Properties props) {
         String name = props.getProperty("name", null);
         if (name != null) {
-            this.nameMatcher = OptifineParser.parseRegex(name);
+            this.nameMatcher = OptiFineParser.parseRegex(name);
         }
 
         String biomes = props.getProperty("biomes", null);
         if (biomes != null) {
-            this.biomes = OptifineParser.parseIdentifierList(biomes);
+            this.biomes = OptiFineParser.parseIdentifierList(biomes);
         }
 
         String heights = props.getProperty("heights", null);
         if (heights != null) {
-            this.heights = OptifineParser.parseRangeList(heights);
+            this.heights = OptiFineParser.parseRangeList(heights);
         }
 
         String levels = props.getProperty("levels", null);
         if (levels != null) {
-            this.levels = OptifineParser.parseRangeList(levels);
+            this.levels = OptiFineParser.parseRangeList(levels);
         }
 
         String professions = props.getProperty("professions", null);
         if (professions != null) {
-            this.professions = OptifineParser.parseProfessionList(professions);
+            this.professions = OptiFineParser.parseProfessionList(professions);
         }
 
         String colors = props.getProperty("colors", null);
         if (colors != null) {
-            this.colors = OptifineParser.parseList(colors);
+            this.colors = OptiFineParser.parseList(colors);
         }
     }
 
@@ -510,11 +510,11 @@ public final class OptifineProperties {
     }
     // endregion
 
-    public static OptifineProperties parse(ResourceLoadContext context) throws IOException {
+    public static OptiFineProperties parse(ResourceLoadContext context) throws IOException {
         Properties properties = new Properties();
         properties.load(context.getResource().getInputStream());
         context.setProperties(properties);
-        return new OptifineProperties(context);
+        return new OptiFineProperties(context);
     }
 
     private static interface ContainerRemapper {
