@@ -54,9 +54,25 @@ public final class Util {
                 .getId(mc.world.getBiome(pos).value());
     }
 
+    private static Identifier remapFurnaceTexture(Properties properties) {
+        String variants = properties.getProperty("variants", null);
+
+        return variants == null
+                ? BuiltinTexturePath.FURNACE
+                : switch (variants) {
+                    case "_blast", "_blast_furnace" -> BuiltinTexturePath.BLAST_FURNACE;
+                    case "_smoker" -> BuiltinTexturePath.SMOKER;
+                    default -> BuiltinTexturePath.FURNACE;
+                };
+    }
+
+    // container -> (properties -> texture path)
     public static final Map<String, Function<Properties, Identifier>> TEXTURE_REMAPPERS = new HashMap<>();
+    // container -> block id
     public static final Map<String, Identifier[]> ID_AUTO_MAPPING = new HashMap<>();
+    // carpet block id -> color
     public static final Map<String, String> CARPET_TO_COLOR_MAPPING = new HashMap<>();
+    // color -> shulker box block id
     public static final Map<String, Identifier> COLOR_TO_SHULKER_MAPPING = new HashMap<>();
 
     static {
@@ -67,7 +83,7 @@ public final class Util {
         TEXTURE_REMAPPERS.put("crafting", p -> BuiltinTexturePath.CRAFTING_TABLE);
         TEXTURE_REMAPPERS.put("dispenser", p -> BuiltinTexturePath.DISPENSER);
         TEXTURE_REMAPPERS.put("enchantment", p -> BuiltinTexturePath.ENCHANTING_TABLE);
-        TEXTURE_REMAPPERS.put("furnace", p -> BuiltinTexturePath.FURNACE);
+        TEXTURE_REMAPPERS.put("furnace", Util::remapFurnaceTexture);
         TEXTURE_REMAPPERS.put("hopper", p -> BuiltinTexturePath.HOPPER);
         TEXTURE_REMAPPERS.put("shulker_box", p -> BuiltinTexturePath.SHULKER_BOX);
 

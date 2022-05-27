@@ -6,6 +6,7 @@ public interface ID {
     public static final Identifier ANVIL = new Identifier("minecraft", "anvil");
     public static final Identifier BARREL = new Identifier("minecraft", "barrel");
     public static final Identifier BEACON = new Identifier("minecraft", "beacon");
+    public static final Identifier BLAST_FURNACE = new Identifier("minecraft", "blast_furnace");
     public static final Identifier BREWING_STAND = new Identifier("minecraft", "brewing_stand");
     public static final Identifier CHEST = new Identifier("minecraft", "chest");
     public static final Identifier CHIPPED_ANVIL = new Identifier("minecraft", "chipped_anvil");
@@ -17,6 +18,7 @@ public interface ID {
     public static final Identifier ENDER_CHEST = new Identifier("minecraft", "ender_chest");
     public static final Identifier FURNACE = new Identifier("minecraft", "furnace");
     public static final Identifier HOPPER = new Identifier("minecraft", "hopper");
+    public static final Identifier SMOKER = new Identifier("minecraft", "smoker");
     public static final Identifier TRAPPED_CHEST = new Identifier("minecraft", "trapped_chest");
 
     public static final Identifier DONKEY = new Identifier("minecraft", "donkey");

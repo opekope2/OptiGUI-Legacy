@@ -49,11 +49,14 @@ public final class OptiFineProperties {
         remappers.put("horse", this::remapHorse);
         remappers.put("villager", this::remapVillager);
 
-        blockMatchers.put(ID.CHEST, this::matchesChest);
-        blockMatchers.put(ID.TRAPPED_CHEST, this::matchesChest);
-        blockMatchers.put(ID.ENDER_CHEST, this::matchesChest);
         blockMatchers.put(ID.BARREL, this::matchesChest);
         blockMatchers.put(ID.BEACON, this::matchesBeacon);
+        blockMatchers.put(ID.BLAST_FURNACE, this::matchesFurnace);
+        blockMatchers.put(ID.CHEST, this::matchesChest);
+        blockMatchers.put(ID.ENDER_CHEST, this::matchesChest);
+        blockMatchers.put(ID.FURNACE, this::matchesFurnace);
+        blockMatchers.put(ID.SMOKER, this::matchesFurnace);
+        blockMatchers.put(ID.TRAPPED_CHEST, this::matchesChest);
 
         entityMatchers.put(ID.LLAMA, this::matchesLlama);
         entityMatchers.put(ID.VILLAGER, this::matchesVillager);
@@ -348,6 +351,19 @@ public final class OptiFineProperties {
                 };
     }
 
+    private void remapFurnace(Properties properties) {
+        String variants = properties.getProperty("variants", null);
+
+        ids = variants == null
+                ? new Identifier[] { ID.FURNACE, ID.BLAST_FURNACE, ID.SMOKER }
+                : switch (variants) {
+                    case "", "_furnace" -> new Identifier[] { ID.FURNACE };
+                    case "_blast", "_blast_furnace" -> new Identifier[] { ID.BLAST_FURNACE };
+                    case "_smoker" -> new Identifier[] { ID.SMOKER };
+                    default -> ids;
+                };
+    }
+
     private void remapShulkerBlock(Properties properties) {
         String colors = properties.getProperty("colors", null);
         List<Identifier> ids = listOf();
@@ -435,6 +451,14 @@ public final class OptiFineProperties {
             }
         }
         return false;
+    }
+
+    private boolean matchesFurnace(BlockPos pos) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        BlockState state = mc.world.getBlockState(pos);
+        Identifier id = Registry.BLOCK.getId(state.getBlock());
+
+        return ID.BLAST_FURNACE.equals(id) || ID.FURNACE.equals(id) || ID.SMOKER.equals(id);
     }
     // endregion
 
