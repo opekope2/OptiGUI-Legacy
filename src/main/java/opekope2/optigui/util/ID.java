@@ -2,7 +2,7 @@ package opekope2.optigui.util;
 
 import net.minecraft.util.Identifier;
 
-public final class ID {
+public interface ID {
     public static final Identifier ANVIL = new Identifier("minecraft", "anvil");
     public static final Identifier BARREL = new Identifier("minecraft", "barrel");
     public static final Identifier BEACON = new Identifier("minecraft", "beacon");
@@ -41,7 +41,4 @@ public final class ID {
     public static final Identifier GREEN_SHULKER_BOX = new Identifier("minecraft", "green_shulker_box");
     public static final Identifier RED_SHULKER_BOX = new Identifier("minecraft", "red_shulker_box");
     public static final Identifier BLACK_SHULKER_BOX = new Identifier("minecraft", "black_shulker_box");
-
-    private ID() {
-    }
 }

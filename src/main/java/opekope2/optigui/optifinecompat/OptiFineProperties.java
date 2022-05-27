@@ -34,82 +34,20 @@ public final class OptiFineProperties {
 
     private static final EnumProperty<ChestType> CHEST_TYPE_ENUM = EnumProperty.of("type", ChestType.class);
 
-    private static final Map<String, Function<Properties, Identifier>> textureRemappers = new HashMap<>();
-    private static final Map<String, Identifier[]> idAutoMapping = new HashMap<>();
-    private static final Map<String, String> carpetColorMapping = new HashMap<>();
-    private static final Map<String, Identifier> shulkerColorMapping = new HashMap<>();
-
-    private final Map<String, ContainerRemapper> idRemapper = new HashMap<>();
+    private final Map<String, ContainerRemapper> remappers = new HashMap<>();
     private final Map<Identifier, BlockMatcher> blockMatchers = new HashMap<>();
     private final Map<Identifier, EntityMatcher> entityMatchers = new HashMap<>();
 
     private static final String texturePathPrefix = "texture.";
 
     // region Initializers
-    static {
-        textureRemappers.put("anvil", p -> BuiltinTexturePath.ANVIL);
-        textureRemappers.put("beacon", p -> BuiltinTexturePath.BEACON);
-        textureRemappers.put("brewing_stand", p -> BuiltinTexturePath.BREWING_STAND);
-        textureRemappers.put("chest", p -> BuiltinTexturePath.CHEST);
-        textureRemappers.put("crafting", p -> BuiltinTexturePath.CRAFTING_TABLE);
-        textureRemappers.put("dispenser", p -> BuiltinTexturePath.DISPENSER);
-        textureRemappers.put("enchantment", p -> BuiltinTexturePath.ENCHANTING_TABLE);
-        textureRemappers.put("furnace", p -> BuiltinTexturePath.FURNACE);
-        textureRemappers.put("hopper", p -> BuiltinTexturePath.HOPPER);
-        textureRemappers.put("shulker_box", p -> BuiltinTexturePath.SHULKER_BOX);
-
-        textureRemappers.put("horse", p -> BuiltinTexturePath.HORSE);
-        textureRemappers.put("villager", p -> BuiltinTexturePath.VILLAGER);
-
-        idAutoMapping.put("anvil", new Identifier[] { ID.ANVIL, ID.CHIPPED_ANVIL, ID.DAMAGED_ANVIL });
-        idAutoMapping.put("beacon", new Identifier[] { ID.BEACON });
-        idAutoMapping.put("brewing_stand", new Identifier[] { ID.BREWING_STAND });
-        idAutoMapping.put("crafting", new Identifier[] { ID.CRAFTING_TABLE });
-        idAutoMapping.put("enchantment", new Identifier[] { ID.ENCHANTING_TABLE });
-        idAutoMapping.put("furnace", new Identifier[] { ID.FURNACE }); // blast, smoker?
-        idAutoMapping.put("hopper", new Identifier[] { ID.HOPPER });
-
-        carpetColorMapping.put("minecraft:white_carpet", "white");
-        carpetColorMapping.put("minecraft:orange_carpet", "orange");
-        carpetColorMapping.put("minecraft:magenta_carpet", "magenta");
-        carpetColorMapping.put("minecraft:light_blue_carpet", "light_blue");
-        carpetColorMapping.put("minecraft:yellow_carpet", "yellow");
-        carpetColorMapping.put("minecraft:lime_carpet", "lime");
-        carpetColorMapping.put("minecraft:pink_carpet", "pink");
-        carpetColorMapping.put("minecraft:gray_carpet", "gray");
-        carpetColorMapping.put("minecraft:light_gray_carpet", "light_gray");
-        carpetColorMapping.put("minecraft:cyan_carpet", "cyan");
-        carpetColorMapping.put("minecraft:purple_carpet", "purple");
-        carpetColorMapping.put("minecraft:blue_carpet", "blue");
-        carpetColorMapping.put("minecraft:brown_carpet", "brown");
-        carpetColorMapping.put("minecraft:green_carpet", "green");
-        carpetColorMapping.put("minecraft:red_carpet", "red");
-        carpetColorMapping.put("minecraft:black_carpet", "black");
-
-        shulkerColorMapping.put("white", ID.WHITE_SHULKER_BOX);
-        shulkerColorMapping.put("orange", ID.ORANGE_SHULKER_BOX);
-        shulkerColorMapping.put("magenta", ID.MAGENTA_SHULKER_BOX);
-        shulkerColorMapping.put("light_blue", ID.LIGHT_BLUE_SHULKER_BOX);
-        shulkerColorMapping.put("yellow", ID.YELLOW_SHULKER_BOX);
-        shulkerColorMapping.put("lime", ID.LIME_SHULKER_BOX);
-        shulkerColorMapping.put("pink", ID.PINK_SHULKER_BOX);
-        shulkerColorMapping.put("gray", ID.GRAY_SHULKER_BOX);
-        shulkerColorMapping.put("light_gray", ID.LIGHT_GRAY_SHULKER_BOX);
-        shulkerColorMapping.put("cyan", ID.CYAN_SHULKER_BOX);
-        shulkerColorMapping.put("purple", ID.PURPLE_SHULKER_BOX);
-        shulkerColorMapping.put("blue", ID.BLUE_SHULKER_BOX);
-        shulkerColorMapping.put("brown", ID.BROWN_SHULKER_BOX);
-        shulkerColorMapping.put("green", ID.GREEN_SHULKER_BOX);
-        shulkerColorMapping.put("red", ID.RED_SHULKER_BOX);
-        shulkerColorMapping.put("black", ID.BLACK_SHULKER_BOX);
-    }
-
     {
-        idRemapper.put("chest", this::remapChest);
-        idRemapper.put("dispenser", this::remapDispenser);
-        idRemapper.put("shulker_box", this::remapShulkerBlock);
-        idRemapper.put("horse", this::remapHorse);
-        idRemapper.put("villager", this::remapVillager);
+        remappers.put("chest", this::remapChest);
+        remappers.put("dispenser", this::remapDispenser);
+        remappers.put("furnace", this::remapFurnace);
+        remappers.put("shulker_box", this::remapShulkerBlock);
+        remappers.put("horse", this::remapHorse);
+        remappers.put("villager", this::remapVillager);
 
         blockMatchers.put(ID.CHEST, this::matchesChest);
         blockMatchers.put(ID.TRAPPED_CHEST, this::matchesChest);
@@ -151,12 +89,12 @@ public final class OptiFineProperties {
             return;
         }
 
-        Identifier[] ids = idAutoMapping.getOrDefault(container, null);
+        Identifier[] ids = ID_AUTO_MAPPING.getOrDefault(container, null);
         if (ids != null) {
             this.ids = ids;
         }
 
-        ContainerRemapper remapper = idRemapper.getOrDefault(container, null);
+        ContainerRemapper remapper = remappers.getOrDefault(container, null);
         if (remapper != null) {
             remapper.remapContainer(context.getProperties());
         }
@@ -231,7 +169,7 @@ public final class OptiFineProperties {
 
     private Identifier getTextureToRemap(Properties properties) {
         String container = properties.getProperty("container", null);
-        Function<Properties, Identifier> remapper = textureRemappers.get(container);
+        Function<Properties, Identifier> remapper = TEXTURE_REMAPPERS.get(container);
         return remapper != null ? remapper.apply(properties) : null;
     }
     // endregion
@@ -415,13 +353,13 @@ public final class OptiFineProperties {
         List<Identifier> ids = listOf();
 
         if (colors == null) {
-            for (Identifier shulker : shulkerColorMapping.values()) {
+            for (Identifier shulker : COLOR_TO_SHULKER_MAPPING.values()) {
                 ids.add(shulker);
             }
         } else {
             List<String> colorList = parseList(colors);
             for (String color : colorList) {
-                Identifier shulker = shulkerColorMapping.getOrDefault(color, null);
+                Identifier shulker = COLOR_TO_SHULKER_MAPPING.getOrDefault(color, null);
                 if (shulker != null) {
                     ids.add(shulker);
                 }
@@ -512,7 +450,7 @@ public final class OptiFineProperties {
                 return colors.isEmpty();
             }
 
-            carpet = carpetColorMapping.getOrDefault(carpet, null);
+            carpet = CARPET_TO_COLOR_MAPPING.getOrDefault(carpet, null);
             return carpet != null && colors.contains(carpet);
         }
         return false;
