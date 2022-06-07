@@ -19,6 +19,7 @@ import net.minecraft.entity.passive.WanderingTraderEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.predicate.NumberRange.IntRange;
+import net.minecraft.resource.Resource;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Nameable;
@@ -207,7 +208,7 @@ public final class OptiFineProperties {
             BlockEntity entity = mc.world.getBlockEntity(pos);
             if (entity != null && entity instanceof Nameable nameable) {
                 if (nameable.hasCustomName()) {
-                    String customName = nameable.getCustomName().asString();
+                    String customName = nameable.getCustomName().getString();
                     if (!nameMatcher.matches(customName)) {
                         return false;
                     }
@@ -255,7 +256,7 @@ public final class OptiFineProperties {
             }
         }
 
-        if (nameMatcher != null && !nameMatcher.matches(entity.getCustomName().asString())) {
+        if (nameMatcher != null && !nameMatcher.matches(entity.getCustomName().getString())) {
             return false;
         }
 
@@ -506,7 +507,10 @@ public final class OptiFineProperties {
 
     public static OptiFineProperties parse(ResourceLoadContext context) throws IOException {
         Properties properties = new Properties();
-        properties.load(context.getResource().getInputStream());
+        Optional<Resource> resource = context.getResource();
+        if (resource.isPresent()) {
+            properties.load(resource.get().getInputStream());
+        }
         context.setProperties(properties);
         return new OptiFineProperties(context);
     }

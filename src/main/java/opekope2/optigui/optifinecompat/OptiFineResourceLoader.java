@@ -1,6 +1,7 @@
 package opekope2.optigui.optifinecompat;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Properties;
 
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
@@ -20,7 +21,8 @@ public final class OptiFineResourceLoader implements SimpleSynchronousResourceRe
     @Override
     public void reload(ResourceManager manager) {
         Replacer.instance.clear();
-        for (Identifier id : manager.findResources("optifine/gui/container", path -> path.endsWith(".properties"))) {
+        for (Identifier id : manager
+                .findResources("optifine/gui/container", path -> path.toString().endsWith(".properties")).keySet()) {
             try {
                 ResourceLoadContext ctx = new ResourceLoadContext(manager, id);
                 OptiFineProperties props = OptiFineProperties.parse(ctx);
@@ -46,14 +48,14 @@ public final class OptiFineResourceLoader implements SimpleSynchronousResourceRe
                 return null;
             }
 
-            if (resourceManager.containsResource(id)) {
+            if (resourceManager.getResource(id).isPresent()) {
                 return id;
             }
-            
+
             String namespace = id.getNamespace(), path = id.getPath();
 
             id = new Identifier(namespace, path + ".png");
-            if (resourceManager.containsResource(id)) {
+            if (resourceManager.getResource(id).isPresent()) {
                 return id;
             }
 
@@ -64,7 +66,7 @@ public final class OptiFineResourceLoader implements SimpleSynchronousResourceRe
             return resourceId;
         }
 
-        public Resource getResource() throws IOException {
+        public Optional<Resource> getResource() {
             return resourceManager.getResource(resourceId);
         }
 
