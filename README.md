@@ -1,6 +1,6 @@
 # OptiGUI
 
-A drop-in replacement for OptiFine custom GUIs.
+A client side drop-in replacement for OptiFine custom GUIs.
 
 This mod supports most OptiFine GUI resource packs. I didn't do an extensive test with the .properties files, because I couldn't find such a resource pack.
 If a resource pack does not work or works differently than using OptiFine, please open an issue.
@@ -39,7 +39,7 @@ The mod is included in the [Fabulously Optimized](https://github.com/Fabulously-
 
 ### Does this mod support OptiFine GUI animations?
 
-No, please check out [Animatica](https://github.com/FoundationGames/Animatica).
+Not by itself, please check out [Animatica](https://github.com/FoundationGames/Animatica). Supported as of OptiGUI v0.2.0.
 
 ### Does this mod support OptiFine colors (colors.properties)?
 
