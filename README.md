@@ -16,7 +16,7 @@ If a resource pack does not work or works differently than using OptiFine, pleas
 * [Colourful Containers](https://www.planetminecraft.com/texture-pack/colourful-containers-gui/)
 * [Colourful Containers Add-On](https://www.planetminecraft.com/texture-pack/updated-colourful-containers-light-mode-gui-optifine-required/)
 * [Colourful Containers Dark Mode](https://www.planetminecraft.com/texture-pack/colourful-containers-dark-mode-gui-optifine-required/)
-* [Animated RGB GUI](https://www.curseforge.com/minecraft/texture-packs/optifine-animated-rgb-gui) (see below for animation support)
+* [Animated RGB GUI](https://www.curseforge.com/minecraft/texture-packs/optifine-animated-rgb-gui) (see FAQ for animation support)
 * [NEON20 ANIMATED](https://www.planetminecraft.com/texture-pack/neon20-animated-optifine/)
 
 This list is not exhaustive. If you know a resource pack which works, please open an issue. If you know a resource pack which does not work, but works with OptiFine, please open an issue.
