@@ -49,7 +49,7 @@ This mod supports some additional GUIs which are not (yet) supported by OptiFine
 
 ## FAQ
 
-### Can I use it in a modpack?
+### Can I use this mod in a modpack?
 
 Yes, the license allows that.
 
@@ -66,3 +66,7 @@ No, see [Colormatic](https://github.com/kvverti/colormatic).
 ### Does this mod have a configuration GUI/file?
 
 No. Just load a resource pack and it works out-of-the-box.
+
+### Does this mod work with Sodium?
+
+Yes. As of 2022-09-08, Sodium does not interfere with OptiGUI. If Sodium introduces a change which breaks OptiGUI, please open an issue.
