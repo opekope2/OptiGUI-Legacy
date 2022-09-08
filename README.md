@@ -6,8 +6,10 @@ This mod supports most OptiFine GUI resource packs. I didn't do an extensive tes
 If a resource pack does not work or works differently than using OptiFine, please open an issue.
 
 ## How do I use it
-1. Download ([GitHub releases](https://github.com/opekope2/OptiGUI/releases) / [Modrinth](https://modrinth.com/mod/optigui) / [CurseForge](https://www.curseforge.com/minecraft/mc-mods/optigui))
-2. Put it in your mods folder
+1. Download and install [Fabric](https://fabricmc.net/use)
+2. Download [Fabric API](https://fabricmc.net/use) and put it in your mods folder
+3. Download this mod from [GitHub releases](https://github.com/opekope2/OptiGUI/releases), [Modrinth](https://modrinth.com/mod/optigui/versions), or [CurseForge](https://www.curseforge.com/minecraft/mc-mods/optigui/files)
+4. Put this mod in your mods folder
 
 ## OptiFine extensions
 
