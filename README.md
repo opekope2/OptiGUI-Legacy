@@ -27,6 +27,12 @@ This list is not exhaustive. If you know a resource pack which works, please ope
 
 ¹ Color shulker boxes, Ender chests and Villager Professions do not work. The resource pack does not include OptiFine-specific assets, and these features are not supported by OptiGUI. (Some mods (Colourful Containers) include assets for these features and work on OptiGUI)
 
+## Incompatible mods
+
+These mods are known to have issues with OptiGUI. Unless noted otherwise, these mods **can** be loaded alongside OptiGUI, but interfere with this mod's functionality.
+
+* [Litematica Printer](https://github.com/aleksilassila/litematica-printer) - print mode resets any open GUI texture. Reopening the GUI fixes the texture. [#15](https://github.com/opekope2/OptiGUI/issues/15)
+
 ## Additions to OptiFine
 
 This mod supports some additional GUIs which are not (yet) supported by OptiFine. These start with an underscore (`_`) to minimize the chance of an incompatibility with an upcoming OptiFine update.
