@@ -16,9 +16,11 @@ If a resource pack does not work or works differently than using OptiFine, pleas
 * [Colourful Containers](https://www.planetminecraft.com/texture-pack/colourful-containers-gui/)
 * [Colourful Containers Add-On](https://www.planetminecraft.com/texture-pack/updated-colourful-containers-light-mode-gui-optifine-required/)
 * [Colourful Containers Dark Mode](https://www.planetminecraft.com/texture-pack/colourful-containers-dark-mode-gui-optifine-required/)
-* [Animated RGB GUI](https://www.curseforge.com/minecraft/texture-packs/optifine-animated-rgb-gui) (see FAQ for animation support)
+* [Animated RGB GUI](https://www.curseforge.com/minecraft/texture-packs/optifine-animated-rgb-gui) ¹
 * [NEON20 ANIMATED](https://www.planetminecraft.com/texture-pack/neon20-animated-optifine/)
 * [Rybo's Enhanced GUI](https://www.planetminecraft.com/texture-pack/rybo-s-enhanced-gui/)
+
+¹ see FAQ for animation support
 
 This list is not exhaustive. If you know a resource pack which works, please open an issue. If you know a resource pack which does not work, but works with OptiFine, please open an issue.
 
@@ -26,15 +28,17 @@ This list is not exhaustive. If you know a resource pack which works, please ope
 
 * [Advanced GUI](https://www.planetminecraft.com/texture-pack/custom-gui/) ¹
 
-¹ Color shulker boxes, Ender chests and Villager Professions do not work. The resource pack does not include OptiFine-specific assets, and these features are not supported by OptiGUI. (Some mods (Colourful Containers) include assets for these features and work on OptiGUI)
+¹ Color shulker boxes, Ender chests and Villager Professions do not work. The resource pack does not include OptiFine-specific assets, and these features are not supported by OptiGUI. (Some mods (Colourful Containers) include assets for these features and work with OptiGUI)
 
-## Incompatible mods
+## Mods with incompatibilities
 
 These mods are known to have issues with OptiGUI. Unless noted otherwise, these mods **can** be loaded alongside OptiGUI, but interfere with this mod's functionality.
 
 * [Litematica Printer](https://github.com/aleksilassila/litematica-printer) - print mode resets any open GUI texture. Reopening the GUI fixes the texture. [#15](https://github.com/opekope2/OptiGUI/issues/15)
 
-## Additions to OptiFine
+## Resource pack format
+
+See [OptiFine docs](https://optifine.readthedocs.io/custom_guis.html).
 
 This mod supports some additional GUIs which are not (yet) supported by OptiFine. These start with an underscore (`_`) to minimize the chance of an incompatibility with an upcoming OptiFine update.
 
@@ -77,3 +81,11 @@ No. Just load a resource pack and it works out-of-the-box.
 ### Does this mod work with Sodium?
 
 Yes. As of 2022-09-08, Sodium does not interfere with OptiGUI. If Sodium introduces a change which breaks OptiGUI, please open an issue.
+
+### What loaders are supported?
+
+* Fabric is supported.
+* Fabric derivates like Quilt are not supported, it may or may not work, feel free to try it.
+* Forge is not supported.
+* Other loaders are not supported.
+* No support is planned for loaders other than Fabric as of now.
