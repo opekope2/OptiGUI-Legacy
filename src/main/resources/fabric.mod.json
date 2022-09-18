@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "optigui",
-  "version": "1.1.0",
+  "version": "1.1.2",
 
   "name": "OptiGUI",
   "description": "A drop-in replacement for OptiFine custom GUIs",
@@ -17,7 +17,7 @@
   "license": "MIT",
   "icon": "assets/optigui/icon.png",
 
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
     "client": [
       "opekope2.optigui.OptiGUIClient"

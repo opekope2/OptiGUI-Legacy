@@ -44,8 +44,7 @@ public final class Util {
         return date.getMonth() == Month.DECEMBER && (day >= 24 || day <= 26);
     }
 
-    public static Identifier getBiomeId(BlockPos pos) {
-        MinecraftClient mc = MinecraftClient.getInstance();
+    public static Identifier getBiomeId(MinecraftClient mc, BlockPos pos) {
         return mc.world.getRegistryManager().get(Registry.BIOME_KEY)
                 .getId(mc.world.getBiome(pos).value());
     }
