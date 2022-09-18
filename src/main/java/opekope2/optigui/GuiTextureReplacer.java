@@ -9,8 +9,8 @@ import net.minecraft.util.math.BlockPos;
 import opekope2.optigui.optifinecompat.OptiFineProperties;
 import opekope2.optigui.util.InteractionCache;
 
-public final class Replacer {
-    public static final Replacer instance = new Replacer();
+public final class GuiTextureReplacer {
+    public static final GuiTextureReplacer instance = new GuiTextureReplacer();
 
     private List<OptiFineProperties> properties = new ArrayList<>();
 
@@ -79,6 +79,6 @@ public final class Replacer {
         return id;
     }
 
-    private Replacer() {
+    private GuiTextureReplacer() {
     }
 }
