@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -23,6 +24,7 @@ public final class OptiGUIClient implements ClientModInitializer {
 		UseCallback useCallback = new UseCallback();
 		UseBlockCallback.EVENT.register(useCallback);
 		UseEntityCallback.EVENT.register(useCallback);
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> GuiTextureReplacer.instance.clear());
 		logger.info("OptiGUI initialized.");
 	}
 }

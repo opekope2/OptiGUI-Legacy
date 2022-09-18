@@ -11,13 +11,13 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.world.World;
-import opekope2.optigui.Replacer;
+import opekope2.optigui.GuiTextureReplacer;
 
 public final class UseCallback implements UseBlockCallback, UseEntityCallback {
     @Override
     public ActionResult interact(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) {
         if (world.isClient) {
-            Replacer.instance.useBlock(hitResult.getBlockPos());
+            GuiTextureReplacer.instance.useBlock(hitResult.getBlockPos());
         }
         return ActionResult.PASS;
     }
@@ -26,7 +26,7 @@ public final class UseCallback implements UseBlockCallback, UseEntityCallback {
     public ActionResult interact(PlayerEntity player, World world, Hand hand, Entity entity,
             @Nullable EntityHitResult hitResult) {
         if (world.isClient) {
-            Replacer.instance.useEntity(entity);
+            GuiTextureReplacer.instance.useEntity(entity);
         }
         return ActionResult.PASS;
     }
