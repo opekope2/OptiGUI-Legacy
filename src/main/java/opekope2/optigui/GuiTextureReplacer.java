@@ -23,6 +23,10 @@ public final class GuiTextureReplacer {
 
     public void clear() {
         properties.clear();
+        clearCaches();
+    }
+
+    public void clearCaches() {
         lastInteraction.clear();
         noReplacements.clear();
     }
@@ -35,12 +39,15 @@ public final class GuiTextureReplacer {
         lastInteraction.cacheEntity(entity);
     }
 
+    public void updateCachedBlockOrEntity() {
+        lastInteraction.updateCachedBlockOrEntity();
+    }
+
     public Identifier getReplacement(Identifier id) {
         if (noReplacements.contains(id)) {
             return id;
         }
 
-        lastInteraction.update();
         if (lastInteraction.hasCachedReplacement(id)) {
             return lastInteraction.getCachedReplacement();
         }

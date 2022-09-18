@@ -5,6 +5,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import opekope2.optigui.OptiGUIClient;
 
 import static opekope2.optigui.util.Util.getBiomeId;
 
@@ -44,7 +45,7 @@ public class InteractionCache {
         height = pos.getY();
         id = Registry.ENTITY_TYPE.getId(entity.getType());
 
-        this.pos = null;
+        this.pos = pos;
         this.entity = entity;
 
         clearCachedReplacement();
@@ -81,12 +82,12 @@ public class InteractionCache {
         return replacement;
     }
 
-    public void update() {
+    public void updateCachedBlockOrEntity() {
         if (pos != null) {
             updateCachedBlock();
         }
         if (entity != null) {
-            UpdateCachedEntity();
+            updateCachedEntity();
         }
     }
 
@@ -99,6 +100,13 @@ public class InteractionCache {
 
         MinecraftClient mc = MinecraftClient.getInstance();
 
+        // Fix Quilt issues: #16, #17
+        if (mc.world == null) {
+            OptiGUIClient.logger.warn("Cannot update block after leaving game!");
+            valid = false;
+            return;
+        }
+
         Identifier blockId = Registry.BLOCK.getId(mc.world.getBlockState(pos).getBlock());
         if (!blockId.equals(id)) {
             id = blockId;
@@ -110,7 +118,7 @@ public class InteractionCache {
         }
     }
 
-    private void UpdateCachedEntity() {
+    private void updateCachedEntity() {
         if (!valid) {
             return;
         }
@@ -134,11 +142,6 @@ public class InteractionCache {
         if (y != height) {
             height = y;
             updated = false;
-        }
-        Identifier entityId = Registry.ENTITY_TYPE.getId(entity.getType());
-        if (!entityId.equals(id)) {
-            id = entityId;
-            valid = false;
         }
 
         if (updated) {
