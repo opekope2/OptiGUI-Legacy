@@ -181,13 +181,13 @@ public final class OptiFineProperties {
     // endregion
 
     // region Replacing
-    public boolean matchesBlock(BlockPos pos) {
+    public boolean hasReplacementGuiForBlock(BlockPos pos) {
         if (isEntity) {
             return false;
         }
 
         MinecraftClient mc = MinecraftClient.getInstance();
-        if (biomes != null && !biomes.contains(getBiomeId(pos))) {
+        if (biomes != null && !biomes.contains(getBiomeId(mc, pos))) {
             return false;
         }
 
@@ -233,13 +233,14 @@ public final class OptiFineProperties {
         return true;
     }
 
-    public boolean matchesEntity(Entity entity) {
+    public boolean hasReplacementGuiForEntity(Entity entity) {
         if (!isEntity) {
             return false;
         }
 
+        MinecraftClient mc = MinecraftClient.getInstance();
         BlockPos pos = entity.getBlockPos();
-        if (biomes != null && !biomes.contains(getBiomeId(pos))) {
+        if (biomes != null && !biomes.contains(getBiomeId(mc, pos))) {
             return false;
         }
 
@@ -281,7 +282,7 @@ public final class OptiFineProperties {
 
         MinecraftClient mc = MinecraftClient.getInstance();
 
-        if (biomes != null && !biomes.contains(getBiomeId(mc.player.getBlockPos()))) {
+        if (biomes != null && !biomes.contains(getBiomeId(mc, mc.player.getBlockPos()))) {
             return false;
         }
 
@@ -301,7 +302,7 @@ public final class OptiFineProperties {
         return true;
     }
 
-    public boolean hasReplacement(Identifier original) {
+    public boolean hasReplacementGuiTexture(Identifier original) {
         if (textureRemaps.containsKey(original)) {
             return true;
         }
