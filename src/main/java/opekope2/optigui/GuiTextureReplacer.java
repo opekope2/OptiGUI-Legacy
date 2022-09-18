@@ -23,6 +23,10 @@ public final class GuiTextureReplacer {
 
     public void clear() {
         properties.clear();
+        clearCaches();
+    }
+
+    public void clearCaches() {
         lastInteraction.clear();
         noReplacements.clear();
     }
