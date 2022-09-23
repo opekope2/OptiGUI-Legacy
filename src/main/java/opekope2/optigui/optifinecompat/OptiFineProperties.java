@@ -5,7 +5,6 @@ import static opekope2.optigui.util.Util.*;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -21,6 +20,8 @@ import net.minecraft.resource.Resource;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.Identifier;
 import opekope2.optigui.OptiGUIClient;
+import opekope2.optigui.interfaces.RegexMatcher;
+import opekope2.optigui.interfaces.TextureRemapper;
 import opekope2.optigui.optifinecompat.OptiFineResourceLoader.ResourceLoadContext;
 import opekope2.optigui.util.*;
 
@@ -40,7 +41,7 @@ public final class OptiFineProperties {
         remappers.put("chest", this::remapChest);
         remappers.put("dispenser", this::remapDispenser);
         remappers.put("furnace", this::remapFurnace);
-        remappers.put("shulker_box", this::remapShulkerBlock);
+        remappers.put("shulker_box", this::remapShulkerBox);
         remappers.put("horse", this::remapHorse);
         remappers.put("villager", this::remapVillager);
 
@@ -72,7 +73,7 @@ public final class OptiFineProperties {
     private Boolean _barrel = null;
     // endregion
 
-    private IRegexMatcher nameMatcher = null;
+    private RegexMatcher nameMatcher = null;
     private Set<Identifier> biomes = null;
     private Iterable<IntRange> heights = null;
     private Iterable<IntRange> levels = null;
@@ -168,13 +169,13 @@ public final class OptiFineProperties {
 
     private Identifier getTextureToRemap(Properties properties) {
         String container = properties.getProperty("container", null);
-        Function<Properties, Identifier> remapper = TEXTURE_REMAPPERS.get(container);
-        return remapper != null ? remapper.apply(properties) : null;
+        TextureRemapper remapper = TEXTURE_REMAPPERS.get(container);
+        return remapper != null ? remapper.remap(properties) : null;
     }
     // endregion
 
     // region Replacing
-    public boolean hasReplacementGuiForBlock(InteractionInfo interaction) {
+    public boolean matchesBlock(InteractionInfo interaction) {
         if (isEntity) {
             return false;
         }
@@ -214,7 +215,7 @@ public final class OptiFineProperties {
         return true;
     }
 
-    public boolean hasReplacementGuiForEntity(InteractionInfo interaction) {
+    public boolean matchesEntity(InteractionInfo interaction) {
         if (!isEntity) {
             return false;
         }
@@ -254,7 +255,7 @@ public final class OptiFineProperties {
         return true;
     }
 
-    public boolean matchesAnything(InteractionInfo interaction) {
+    public boolean matchesAnythingElse(InteractionInfo interaction) {
         if (ids != null) {
             return false;
         }
@@ -280,7 +281,7 @@ public final class OptiFineProperties {
         return true;
     }
 
-    public boolean hasReplacementGuiTexture(Identifier original) {
+    public boolean canReplaceTexture(Identifier original) {
         if (textureRemaps.containsKey(original)) {
             return true;
         }
@@ -289,7 +290,7 @@ public final class OptiFineProperties {
         return textureRemaps.containsKey(new Identifier(namespace, path));
     }
 
-    public Identifier getReplacementTexture(Identifier original) {
+    public Identifier replaceTexture(Identifier original) {
         if (textureRemaps.containsKey(original)) {
             return textureRemaps.getOrDefault(original, original);
         }
@@ -346,7 +347,7 @@ public final class OptiFineProperties {
                 };
     }
 
-    private void remapShulkerBlock(Properties properties) {
+    private void remapShulkerBox(Properties properties) {
         String colors = properties.getProperty("colors", null);
         Set<Identifier> ids = new HashSet<>();
 
@@ -489,10 +490,10 @@ public final class OptiFineProperties {
     }
 
     private static interface ContainerRemapper {
-        void remapContainer(Properties packProps);
+        public void remapContainer(Properties packProps);
     }
 
     private static interface InteractionMatcher {
-        boolean matchesInteraction(InteractionInfo interaction);
+        public boolean matchesInteraction(InteractionInfo interaction);
     }
 }

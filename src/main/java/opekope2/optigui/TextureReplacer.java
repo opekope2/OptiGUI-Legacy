@@ -12,8 +12,8 @@ import opekope2.optigui.optifinecompat.OptiFineProperties;
 import opekope2.optigui.util.InteractionCache;
 import opekope2.optigui.util.InteractionInfo;
 
-public final class GuiTextureReplacer {
-    public static final GuiTextureReplacer instance = new GuiTextureReplacer();
+public final class TextureReplacer {
+    public static final TextureReplacer instance = new TextureReplacer();
 
     private List<OptiFineProperties> properties = new ArrayList<>();
 
@@ -42,8 +42,8 @@ public final class GuiTextureReplacer {
         lastInteraction.cacheEntity(entity);
     }
 
-    public void updateCachedBlockOrEntity() {
-        lastInteraction.updateCachedBlockOrEntity();
+    public void refreshInteraction() {
+        lastInteraction.refreshInteraction();
     }
 
     public Identifier getReplacement(Identifier id) {
@@ -62,24 +62,24 @@ public final class GuiTextureReplacer {
 
         boolean hasReplacement = false;
         for (OptiFineProperties props : properties) {
-            if (props.hasReplacementGuiTexture(id)) {
+            if (props.canReplaceTexture(id)) {
                 hasReplacement = true;
             } else {
                 continue;
             }
 
-            if (interaction.isBlock() && props.hasReplacementGuiForBlock(interaction)) {
-                Identifier replacement = props.getReplacementTexture(id);
+            if (interaction.isBlock() && props.matchesBlock(interaction)) {
+                Identifier replacement = props.replaceTexture(id);
                 lastInteraction.cacheReplacement(id, replacement);
                 return replacement;
             }
-            if (interaction.isEntity() && props.hasReplacementGuiForEntity(interaction)) {
-                Identifier replacement = props.getReplacementTexture(id);
+            if (interaction.isEntity() && props.matchesEntity(interaction)) {
+                Identifier replacement = props.replaceTexture(id);
                 lastInteraction.cacheReplacement(id, replacement);
                 return replacement;
             }
-            if (props.matchesAnything(interaction)) {
-                return props.getReplacementTexture(id);
+            if (props.matchesAnythingElse(interaction)) {
+                return props.replaceTexture(id);
             }
         }
 
@@ -92,6 +92,6 @@ public final class GuiTextureReplacer {
         return id;
     }
 
-    private GuiTextureReplacer() {
+    private TextureReplacer() {
     }
 }

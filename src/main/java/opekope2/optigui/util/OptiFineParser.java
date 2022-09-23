@@ -4,7 +4,6 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static org.apache.commons.text.StringEscapeUtils.unescapeJava;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import com.mojang.brigadier.StringReader;
@@ -12,9 +11,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.util.Identifier;
+import opekope2.optigui.interfaces.RegexMatcher;
 
 public final class OptiFineParser {
-    private static final Map<String, Function<String, Pattern>> regexParsers = new HashMap<>();
+    private static final Map<String, RegexParser> regexParsers = new HashMap<>();
 
     static {
         regexParsers.put("pattern:", s -> Pattern.compile(wildcardToRegex(s)));
@@ -32,7 +32,7 @@ public final class OptiFineParser {
         }
     }
 
-    public static List<String> parseList(String input) {
+    public static Collection<String> parseList(String input) {
         return parseList(input, s -> s, " \t", false);
     }
 
@@ -49,11 +49,11 @@ public final class OptiFineParser {
         return result;
     }
 
-    public static List<Identifier> parseIdentifierList(String input) {
+    public static Collection<Identifier> parseIdentifierList(String input) {
         return parseList(input, s -> new Identifier(s), " \t", false);
     }
 
-    public static List<IntRange> parseRangeList(String input) {
+    public static Collection<IntRange> parseRangeList(String input) {
         return parseList(input, OptiFineParser::parseRange, " \t", true);
     }
 
@@ -61,7 +61,7 @@ public final class OptiFineParser {
         List<String> tokens = parseList(input, s -> s, ":", false);
         String namespace = "minecraft";
         String profession;
-        List<IntRange> levels;
+        Collection<IntRange> levels;
 
         switch (tokens.size()) {
             case 1 -> {
@@ -94,7 +94,7 @@ public final class OptiFineParser {
         return new VillagerMatcher(new Identifier(namespace, profession), levels);
     }
 
-    public static List<VillagerMatcher> parseProfessionList(String input) {
+    public static Collection<VillagerMatcher> parseProfessionList(String input) {
         return parseList(input, OptiFineParser::parseProfession, " \t", true);
     }
 
@@ -125,22 +125,22 @@ public final class OptiFineParser {
         return result.toString();
     }
 
-    public static IRegexMatcher parseRegex(String input) {
+    public static RegexMatcher parseRegex(String input) {
         if (input == null) {
             return null;
         }
 
         for (var parser : regexParsers.entrySet()) {
             String key = parser.getKey();
-            Function<String, Pattern> value = parser.getValue();
+            RegexParser value = parser.getValue();
 
             if (input.startsWith(key)) {
                 input = unescapeJava(input.substring(key.length()));
                 if (input.startsWith("!")) {
-                    Pattern regex = value.apply(input.substring(1));
+                    Pattern regex = value.parse(input.substring(1));
                     return text -> !regex.matcher(text).matches();
                 }
-                Pattern regex = value.apply(input);
+                Pattern regex = value.parse(input);
                 return text -> regex.matcher(text).matches();
             }
         }
@@ -156,6 +156,10 @@ public final class OptiFineParser {
 
     private static interface Converter<T, TResult> {
         public TResult convert(T input);
+    }
+
+    private static interface RegexParser {
+        public Pattern parse(String regex);
     }
 
     private OptiFineParser() {

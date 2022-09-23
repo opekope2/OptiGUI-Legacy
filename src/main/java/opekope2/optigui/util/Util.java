@@ -3,13 +3,13 @@ package opekope2.optigui.util;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import opekope2.optigui.interfaces.Setter;
+import opekope2.optigui.interfaces.TextureRemapper;
 
 public final class Util {
     public static Boolean getBoolean(String s) {
@@ -34,11 +34,11 @@ public final class Util {
         return result;
     }
 
-    public static <T> boolean setAndCheckIfUpdated(Consumer<T> setter, T oldValue, T newValue) {
+    public static <T> boolean setAndCheckIfUpdated(Setter<T> setter, T oldValue, T newValue) {
         boolean updated = oldValue == null ? newValue != null : !oldValue.equals(newValue);
 
         if (updated) {
-            setter.accept(newValue);
+            setter.set(newValue);
         }
 
         return updated;
@@ -68,7 +68,7 @@ public final class Util {
     }
 
     // container -> (properties -> texture path)
-    public static final Map<String, Function<Properties, Identifier>> TEXTURE_REMAPPERS = new HashMap<>();
+    public static final Map<String, TextureRemapper> TEXTURE_REMAPPERS = new HashMap<>();
     // container -> block id
     public static final Map<String, Set<Identifier>> ID_AUTO_MAPPING = new HashMap<>();
     // carpet block id -> color

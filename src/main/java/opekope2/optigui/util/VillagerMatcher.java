@@ -1,7 +1,5 @@
 package opekope2.optigui.util;
 
-import java.util.List;
-
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.passive.WanderingTraderEntity;
 import net.minecraft.predicate.NumberRange.IntRange;
@@ -13,9 +11,9 @@ public final class VillagerMatcher {
     private static final Identifier wanderingTraderProfession = new Identifier("minecraft", "_wandering_trader");
 
     private final Identifier profession;
-    private final List<IntRange> levels;
+    private final Iterable<IntRange> levels;
 
-    public VillagerMatcher(Identifier profession, List<IntRange> levels) {
+    public VillagerMatcher(Identifier profession, Iterable<IntRange> levels) {
         this.profession = profession;
         this.levels = levels;
     }

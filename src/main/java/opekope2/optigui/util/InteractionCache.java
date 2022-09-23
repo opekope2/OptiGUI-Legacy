@@ -39,9 +39,9 @@ public class InteractionCache {
         return replacement;
     }
 
-    public void updateCachedBlockOrEntity() {
+    public void refreshInteraction() {
         try {
-            if (interaction.update()) {
+            if (interaction.refresh()) {
                 clearCachedReplacement();
             }
         } catch (IllegalStateException e) {

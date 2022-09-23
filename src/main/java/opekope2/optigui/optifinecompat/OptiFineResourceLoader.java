@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
-import opekope2.optigui.GuiTextureReplacer;
+import opekope2.optigui.TextureReplacer;
 
 public final class OptiFineResourceLoader implements SimpleSynchronousResourceReloadListener {
     public static final Identifier ID = new Identifier("optigui", "optifine_resource_loader");
@@ -20,13 +20,13 @@ public final class OptiFineResourceLoader implements SimpleSynchronousResourceRe
 
     @Override
     public void reload(ResourceManager manager) {
-        GuiTextureReplacer.instance.clear();
+        TextureReplacer.instance.clear();
         for (Identifier id : manager
                 .findResources("optifine/gui/container", path -> path.toString().endsWith(".properties")).keySet()) {
             try {
                 ResourceLoadContext ctx = new ResourceLoadContext(manager, id);
                 OptiFineProperties props = OptiFineProperties.parse(ctx);
-                GuiTextureReplacer.instance.add(props);
+                TextureReplacer.instance.add(props);
             } catch (IOException e) {
                 e.printStackTrace();
             }
