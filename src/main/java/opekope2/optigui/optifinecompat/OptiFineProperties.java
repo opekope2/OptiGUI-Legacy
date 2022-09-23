@@ -148,12 +148,7 @@ public final class OptiFineProperties {
                         "Texture '{}' is missing!\nIn resource pack '{}', resource '{}'.",
                         id.toString(), ctx.getResourcePackName(), ctx.getResourceId());
             } else {
-                Identifier textureToRemap = getTextureToRemap(ctx.getProperties());
-                if (textureToRemap == null) {
-                    OptiGUIClient.logger.warn(
-                            "Texture remap failed!\nIn resource pack '{}', resource '{}'.",
-                            ctx.getResourcePackName(), ctx.getResourceId());
-                } else {
+                for (Identifier textureToRemap : getTextureToRemap(ctx.getProperties())) {
                     textureRemaps.put(textureToRemap, foundId);
                 }
             }
@@ -178,10 +173,15 @@ public final class OptiFineProperties {
         }
     }
 
-    private Identifier getTextureToRemap(Properties properties) {
+    private Set<Identifier> getTextureToRemap(Properties properties) {
         String container = properties.getProperty("container", null);
+        Identifier containerTexture = TEXTURE_AUTO_MAPPING.get(container);
+        if (containerTexture != null) {
+            return setOf(containerTexture);
+        }
+
         TextureRemapper remapper = TEXTURE_REMAPPERS.get(container);
-        return remapper != null ? remapper.remap(properties) : null;
+        return remapper != null ? remapper.remap(properties) : setOf();
     }
     // endregion
 
@@ -336,26 +336,42 @@ public final class OptiFineProperties {
     private void remapDispenser(Properties properties) {
         String variants = properties.getProperty("variants", null);
 
-        ids = variants == null
-                ? setOf(ID.DISPENSER, ID.DROPPER)
-                : switch (variants) {
-                    case "", "dispenser" -> setOf(ID.DISPENSER);
-                    case "dropper" -> setOf(ID.DROPPER);
-                    default -> ids;
-                };
+        if (variants == null) {
+            this.ids = setOf(ID.DISPENSER, ID.DROPPER);
+            return;
+        }
+
+        Set<Identifier> ids = new HashSet<>();
+
+        for (String variant : parseList(variants)) {
+            switch (variant) {
+                case "", "dispenser" -> ids.add(ID.DISPENSER);
+                case "dropper" -> ids.add(ID.DROPPER);
+            }
+        }
+
+        this.ids = ids;
     }
 
     private void remapFurnace(Properties properties) {
         String variants = properties.getProperty("variants", null);
 
-        ids = variants == null
-                ? setOf(ID.FURNACE, ID.BLAST_FURNACE, ID.SMOKER)
-                : switch (variants) {
-                    case "", "_furnace" -> setOf(ID.FURNACE);
-                    case "_blast", "_blast_furnace" -> setOf(ID.BLAST_FURNACE);
-                    case "_smoker" -> setOf(ID.SMOKER);
-                    default -> ids;
-                };
+        if (variants == null) {
+            this.ids = setOf(ID.FURNACE, ID.BLAST_FURNACE, ID.SMOKER);
+            return;
+        }
+
+        Set<Identifier> ids = new HashSet<>();
+
+        for (String variant : parseList(variants)) {
+            switch (variant) {
+                case "", "_furnace" -> ids.add(ID.FURNACE);
+                case "_blast", "_blast_furnace" -> ids.add(ID.BLAST_FURNACE);
+                case "_smoker" -> ids.add(ID.SMOKER);
+            }
+        }
+
+        this.ids = ids;
     }
 
     private void remapShulkerBox(Properties properties) {
