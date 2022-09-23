@@ -3,6 +3,7 @@ package opekope2.optigui.optifinecompat;
 import static opekope2.optigui.util.OptiFineParser.*;
 import static opekope2.optigui.util.Util.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -137,16 +138,24 @@ public final class OptiFineProperties {
 
     private void loadTextureRemaps(ResourceLoadContext ctx) {
         String texture = ctx.getProperties().getProperty("texture", null);
-        String resFolder = ctx.getResourceId().toString();
-        resFolder = resFolder.substring(resFolder.indexOf(":") + 1, resFolder.lastIndexOf("/"));
+        String resFolder = new File(ctx.getResourceId().getPath()).getParent();
 
         if (texture != null) {
             Identifier id = PathResolver.resolve(resFolder, texture);
             Identifier foundId = ctx.findResource(id);
             if (foundId == null) {
-                OptiGUIClient.logger.warn("Resource '{}' is missing!", id.toString());
+                OptiGUIClient.logger.warn(
+                        "Texture '{}' is missing!\nIn resource pack '{}', resource '{}'.",
+                        id.toString(), ctx.getResourcePackName(), ctx.getResourceId());
             } else {
-                textureRemaps.put(getTextureToRemap(ctx.getProperties()), foundId);
+                Identifier textureToRemap = getTextureToRemap(ctx.getProperties());
+                if (textureToRemap == null) {
+                    OptiGUIClient.logger.warn(
+                            "Texture remap failed!\nIn resource pack '{}', resource '{}'.",
+                            ctx.getResourcePackName(), ctx.getResourceId());
+                } else {
+                    textureRemaps.put(textureToRemap, foundId);
+                }
             }
         }
 
@@ -158,7 +167,9 @@ public final class OptiFineProperties {
                 Identifier id = PathResolver.resolve(resFolder, value);
                 Identifier foundId = ctx.findResource(id);
                 if (foundId == null) {
-                    OptiGUIClient.logger.warn("Resource '{}' is missing!", id.toString());
+                    OptiGUIClient.logger.warn(
+                            "Resource '{}' is missing!\nIn resource pack '{}', resource '{}'.",
+                            id.toString(), ctx.getResourcePackName(), ctx.getResourceId());
                 } else {
                     String texturePath = key.substring(texturePathPrefix.length());
                     textureRemaps.put(PathResolver.resolve("textures/gui", texturePath), foundId);

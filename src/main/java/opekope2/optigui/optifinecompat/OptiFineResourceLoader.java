@@ -70,6 +70,11 @@ public final class OptiFineResourceLoader implements SimpleSynchronousResourceRe
             return resourceManager.getResource(resourceId);
         }
 
+        public String getResourcePackName() {
+            Optional<Resource> resource = getResource();
+            return resource.isPresent() ? resource.get().getResourcePackName() : null;
+        }
+
         public Properties getProperties() {
             return properties;
         }
