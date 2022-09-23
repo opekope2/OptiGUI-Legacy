@@ -38,8 +38,8 @@ public class InteractionInfo {
 
         boolean updated = false;
 
-        updated |= setAndCheckIfUpdated(x -> biome = x, biome, getBiomeId(mc, pos));
         updated |= setAndCheckIfUpdated(x -> blockPos = x, blockPos, pos);
+        updated |= setAndCheckIfUpdated(x -> biome = x, biome, getBiomeId(mc, pos));
         updated |= setAndCheckIfUpdated(x -> blockState = x, blockState, mc.world.getBlockState(pos));
         updated |= setAndCheckIfUpdated(x -> blockEntity = x, blockEntity, mc.world.getBlockEntity(pos));
         updated |= setAndCheckIfUpdated(x -> entity = x, entity, (Entity) null);
@@ -69,8 +69,8 @@ public class InteractionInfo {
 
         boolean updated = false;
 
-        updated |= setAndCheckIfUpdated(x -> biome = x, biome, getBiomeId(mc, blockPos));
         updated |= setAndCheckIfUpdated(x -> blockPos = x, blockPos, entity.getBlockPos());
+        updated |= setAndCheckIfUpdated(x -> biome = x, biome, getBiomeId(mc, blockPos));
         updated |= setAndCheckIfUpdated(x -> blockState = x, blockState, (BlockState) null);
         updated |= setAndCheckIfUpdated(x -> blockEntity = x, blockEntity, (BlockEntity) null);
         updated |= setAndCheckIfUpdated(x -> this.entity = x, this.entity, entity);
