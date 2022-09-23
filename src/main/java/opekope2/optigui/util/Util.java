@@ -3,6 +3,7 @@ package opekope2.optigui.util;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import net.minecraft.client.MinecraftClient;
@@ -22,20 +23,25 @@ public final class Util {
         };
     }
 
-    public static <T> boolean contains(T[] array, T value) {
-        if (array == null) {
-            return false;
+    @SafeVarargs
+    public static <T> Set<T> setOf(T... args) {
+        Set<T> result = new HashSet<T>();
+
+        for (T arg : args) {
+            result.add(arg);
         }
-        for (T t : array) {
-            if (value == null) {
-                if (t == null) {
-                    return true;
-                }
-            } else if (value.equals(t)) {
-                return true;
-            }
+
+        return result;
+    }
+
+    public static <T> boolean setAndCheckIfUpdated(Consumer<T> setter, T oldValue, T newValue) {
+        boolean updated = oldValue == null ? newValue != null : !oldValue.equals(newValue);
+
+        if (updated) {
+            setter.accept(newValue);
         }
-        return false;
+
+        return updated;
     }
 
     public static boolean isChristmas() {
@@ -64,7 +70,7 @@ public final class Util {
     // container -> (properties -> texture path)
     public static final Map<String, Function<Properties, Identifier>> TEXTURE_REMAPPERS = new HashMap<>();
     // container -> block id
-    public static final Map<String, Identifier[]> ID_AUTO_MAPPING = new HashMap<>();
+    public static final Map<String, Set<Identifier>> ID_AUTO_MAPPING = new HashMap<>();
     // carpet block id -> color
     public static final Map<String, String> CARPET_TO_COLOR_MAPPING = new HashMap<>();
     // color -> shulker box block id
@@ -90,12 +96,12 @@ public final class Util {
         TEXTURE_REMAPPERS.put("horse", p -> BuiltinTexturePath.HORSE);
         TEXTURE_REMAPPERS.put("villager", p -> BuiltinTexturePath.VILLAGER);
 
-        ID_AUTO_MAPPING.put("anvil", new Identifier[] { ID.ANVIL, ID.CHIPPED_ANVIL, ID.DAMAGED_ANVIL });
-        ID_AUTO_MAPPING.put("beacon", new Identifier[] { ID.BEACON });
-        ID_AUTO_MAPPING.put("brewing_stand", new Identifier[] { ID.BREWING_STAND });
-        ID_AUTO_MAPPING.put("crafting", new Identifier[] { ID.CRAFTING_TABLE });
-        ID_AUTO_MAPPING.put("enchantment", new Identifier[] { ID.ENCHANTING_TABLE });
-        ID_AUTO_MAPPING.put("hopper", new Identifier[] { ID.HOPPER });
+        ID_AUTO_MAPPING.put("anvil", setOf(ID.ANVIL, ID.CHIPPED_ANVIL, ID.DAMAGED_ANVIL));
+        ID_AUTO_MAPPING.put("beacon", setOf(ID.BEACON));
+        ID_AUTO_MAPPING.put("brewing_stand", setOf(ID.BREWING_STAND));
+        ID_AUTO_MAPPING.put("crafting", setOf(ID.CRAFTING_TABLE));
+        ID_AUTO_MAPPING.put("enchantment", setOf(ID.ENCHANTING_TABLE));
+        ID_AUTO_MAPPING.put("hopper", setOf(ID.HOPPER));
 
         CARPET_TO_COLOR_MAPPING.put("minecraft:white_carpet", "white");
         CARPET_TO_COLOR_MAPPING.put("minecraft:orange_carpet", "orange");
