@@ -56,6 +56,7 @@ public final class OptiFineProperties {
         blockMatchers.put(ID.TRAPPED_CHEST, this::matchesChest);
 
         entityMatchers.put(ID.LLAMA, this::matchesLlama);
+        entityMatchers.put(ID.TRADER_LLAMA, this::matchesLlama);
         entityMatchers.put(ID.VILLAGER, this::matchesVillager);
         entityMatchers.put(ID.WANDERING_TRADER, this::matchesVillager);
     }
@@ -401,14 +402,14 @@ public final class OptiFineProperties {
         isEntity = true;
         String variants = properties.getProperty("variants", null);
         if (variants == null) {
-            ids = setOf(ID.HORSE, ID.DONKEY, ID.MULE, ID.LLAMA);
+            ids = setOf(ID.HORSE, ID.DONKEY, ID.MULE, ID.LLAMA, ID.TRADER_LLAMA);
             return;
         }
         ids = switch (variants) {
             case "horse" -> setOf(ID.HORSE);
             case "donkey" -> setOf(ID.DONKEY);
             case "mule" -> setOf(ID.MULE);
-            case "llama" -> setOf(ID.LLAMA);
+            case "llama" -> setOf(ID.LLAMA, ID.TRADER_LLAMA);
             default -> ids;
         };
     }
