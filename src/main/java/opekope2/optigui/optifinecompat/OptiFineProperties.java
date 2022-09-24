@@ -12,13 +12,13 @@ import org.apache.commons.io.FilenameUtils;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.passive.LlamaEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.passive.WanderingTraderEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.resource.Resource;
 import net.minecraft.state.property.EnumProperty;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import opekope2.optigui.OptiGUIClient;
 import opekope2.optigui.interfaces.RegexMatcher;
@@ -467,20 +467,14 @@ public final class OptiFineProperties {
 
     // region Entity matchers
     private boolean matchesLlama(InteractionInfo interaction) {
-        NbtCompound nbt = new NbtCompound();
-        interaction.getEntity().writeNbt(nbt);
-        NbtElement nbtDecor = nbt.get("DecorItem");
+        LlamaEntity llama = (LlamaEntity) interaction.getEntity();
+        DyeColor color = llama.getCarpetColor();
 
-        if (nbtDecor != null && nbtDecor instanceof NbtCompound compound) {
-            String carpet = compound.getString("id");
-            if (carpet == null) {
-                return colors.isEmpty();
-            }
-
-            carpet = CARPET_TO_COLOR_MAPPING.getOrDefault(carpet, null);
-            return carpet != null && colors.contains(carpet);
+        if (color == null) {
+            return colors == null;
+        } else {
+            return colors != null ? colors.contains(color.getName()) : true;
         }
-        return false;
     }
 
     private boolean matchesVillager(InteractionInfo interaction) {
