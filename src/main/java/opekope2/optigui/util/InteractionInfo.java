@@ -92,11 +92,16 @@ public class InteractionInfo {
      * @return Should clear
      */
     public boolean refresh() {
+        if (!valid) {
+            return true;
+        }
+
         if (entity != null) {
             return fill(entity);
         } else if (blockPos != null) {
             return fill(blockPos);
         }
+
         return true;
     }
 
