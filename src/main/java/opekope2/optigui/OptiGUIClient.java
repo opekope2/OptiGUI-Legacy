@@ -25,8 +25,8 @@ public final class OptiGUIClient implements ClientModInitializer {
 		UseCallback useCallback = new UseCallback();
 		UseBlockCallback.EVENT.register(useCallback);
 		UseEntityCallback.EVENT.register(useCallback);
-		ClientTickEvents.END_WORLD_TICK.register(world -> GuiTextureReplacer.instance.updateCachedBlockOrEntity());
-		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> GuiTextureReplacer.instance.clearCaches());
+		ClientTickEvents.END_WORLD_TICK.register(world -> TextureReplacer.instance.refreshInteraction());
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> TextureReplacer.instance.clearCaches());
 		logger.info("OptiGUI initialized.");
 	}
 }

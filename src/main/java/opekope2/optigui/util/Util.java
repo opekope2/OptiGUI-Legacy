@@ -1,14 +1,17 @@
 package opekope2.optigui.util;
 
+import static opekope2.optigui.util.OptiFineParser.parseList;
+
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.*;
-import java.util.function.Function;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import opekope2.optigui.interfaces.Setter;
+import opekope2.optigui.interfaces.TextureRemapper;
 
 public final class Util {
     public static Boolean getBoolean(String s) {
@@ -22,20 +25,25 @@ public final class Util {
         };
     }
 
-    public static <T> boolean contains(T[] array, T value) {
-        if (array == null) {
-            return false;
+    @SafeVarargs
+    public static <T> Set<T> setOf(T... args) {
+        Set<T> result = new HashSet<T>();
+
+        for (T arg : args) {
+            result.add(arg);
         }
-        for (T t : array) {
-            if (value == null) {
-                if (t == null) {
-                    return true;
-                }
-            } else if (value.equals(t)) {
-                return true;
-            }
+
+        return result;
+    }
+
+    public static <T> boolean setAndCheckIfUpdated(Setter<T> setter, T oldValue, T newValue) {
+        boolean updated = oldValue == null ? newValue != null : !oldValue.equals(newValue);
+
+        if (updated) {
+            setter.set(newValue);
         }
-        return false;
+
+        return updated;
     }
 
     public static boolean isChristmas() {
@@ -49,53 +57,64 @@ public final class Util {
                 .getId(mc.world.getBiome(pos).value());
     }
 
-    private static Identifier remapFurnaceTexture(Properties properties) {
+    private static Set<Identifier> remapFurnaceTexture(Properties properties) {
         String variants = properties.getProperty("variants", null);
 
-        return variants == null
-                ? BuiltinTexturePath.FURNACE
-                : switch (variants) {
-                    case "_blast", "_blast_furnace" -> BuiltinTexturePath.BLAST_FURNACE;
-                    case "_smoker" -> BuiltinTexturePath.SMOKER;
-                    default -> BuiltinTexturePath.FURNACE;
-                };
+        if (variants == null) {
+            return setOf(BuiltinTexturePath.FURNACE);
+        }
+
+        Set<Identifier> ids = new HashSet<>();
+
+        for (String variant : parseList(variants)) {
+            switch (variant) {
+                case "", "_furnace" -> ids.add(BuiltinTexturePath.FURNACE);
+                case "_blast", "_blast_furnace" -> ids.add(BuiltinTexturePath.BLAST_FURNACE);
+                case "_smoker" -> ids.add(BuiltinTexturePath.SMOKER);
+            }
+        }
+
+        return ids;
     }
 
-    // container -> (properties -> texture path)
-    public static final Map<String, Function<Properties, Identifier>> TEXTURE_REMAPPERS = new HashMap<>();
+    // container -> texture path
+    public static final Map<String, Identifier> TEXTURE_AUTO_MAPPING = new HashMap<>();
+    // container -> (properties -> texture paths)
+    public static final Map<String, TextureRemapper> TEXTURE_REMAPPERS = new HashMap<>();
     // container -> block id
-    public static final Map<String, Identifier[]> ID_AUTO_MAPPING = new HashMap<>();
+    public static final Map<String, Set<Identifier>> ID_AUTO_MAPPING = new HashMap<>();
     // carpet block id -> color
     public static final Map<String, String> CARPET_TO_COLOR_MAPPING = new HashMap<>();
     // color -> shulker box block id
     public static final Map<String, Identifier> COLOR_TO_SHULKER_MAPPING = new HashMap<>();
 
     static {
-        TEXTURE_REMAPPERS.put("anvil", p -> BuiltinTexturePath.ANVIL);
-        TEXTURE_REMAPPERS.put("beacon", p -> BuiltinTexturePath.BEACON);
-        TEXTURE_REMAPPERS.put("brewing_stand", p -> BuiltinTexturePath.BREWING_STAND);
-        TEXTURE_REMAPPERS.put("_cartography_table", p -> BuiltinTexturePath.CARTOGRAPHY_TABLE);
-        TEXTURE_REMAPPERS.put("chest", p -> BuiltinTexturePath.CHEST);
-        TEXTURE_REMAPPERS.put("crafting", p -> BuiltinTexturePath.CRAFTING_TABLE);
-        TEXTURE_REMAPPERS.put("dispenser", p -> BuiltinTexturePath.DISPENSER);
-        TEXTURE_REMAPPERS.put("enchantment", p -> BuiltinTexturePath.ENCHANTING_TABLE);
+        TEXTURE_AUTO_MAPPING.put("anvil", BuiltinTexturePath.ANVIL);
+        TEXTURE_AUTO_MAPPING.put("beacon", BuiltinTexturePath.BEACON);
+        TEXTURE_AUTO_MAPPING.put("brewing_stand", BuiltinTexturePath.BREWING_STAND);
+        TEXTURE_AUTO_MAPPING.put("_cartography_table", BuiltinTexturePath.CARTOGRAPHY_TABLE);
+        TEXTURE_AUTO_MAPPING.put("chest", BuiltinTexturePath.CHEST);
+        TEXTURE_AUTO_MAPPING.put("crafting", BuiltinTexturePath.CRAFTING_TABLE);
+        TEXTURE_AUTO_MAPPING.put("dispenser", BuiltinTexturePath.DISPENSER);
+        TEXTURE_AUTO_MAPPING.put("enchantment", BuiltinTexturePath.ENCHANTING_TABLE);
+        TEXTURE_AUTO_MAPPING.put("_grindstone", BuiltinTexturePath.GRINDSTONE);
+        TEXTURE_AUTO_MAPPING.put("hopper", BuiltinTexturePath.HOPPER);
+        TEXTURE_AUTO_MAPPING.put("_loom", BuiltinTexturePath.LOOM);
+        TEXTURE_AUTO_MAPPING.put("shulker_box", BuiltinTexturePath.SHULKER_BOX);
+        TEXTURE_AUTO_MAPPING.put("_smithing_table", BuiltinTexturePath.SMITHING_TABLE);
+        TEXTURE_AUTO_MAPPING.put("_stonecutter", BuiltinTexturePath.STONECUTTER);
+
+        TEXTURE_AUTO_MAPPING.put("horse", BuiltinTexturePath.HORSE);
+        TEXTURE_AUTO_MAPPING.put("villager", BuiltinTexturePath.VILLAGER);
+
         TEXTURE_REMAPPERS.put("furnace", Util::remapFurnaceTexture);
-        TEXTURE_REMAPPERS.put("_grindstone", p -> BuiltinTexturePath.GRINDSTONE);
-        TEXTURE_REMAPPERS.put("hopper", p -> BuiltinTexturePath.HOPPER);
-        TEXTURE_REMAPPERS.put("_loom", p -> BuiltinTexturePath.LOOM);
-        TEXTURE_REMAPPERS.put("shulker_box", p -> BuiltinTexturePath.SHULKER_BOX);
-        TEXTURE_REMAPPERS.put("_smithing_table", p -> BuiltinTexturePath.SMITHING_TABLE);
-        TEXTURE_REMAPPERS.put("_stonecutter", p -> BuiltinTexturePath.STONECUTTER);
 
-        TEXTURE_REMAPPERS.put("horse", p -> BuiltinTexturePath.HORSE);
-        TEXTURE_REMAPPERS.put("villager", p -> BuiltinTexturePath.VILLAGER);
-
-        ID_AUTO_MAPPING.put("anvil", new Identifier[] { ID.ANVIL, ID.CHIPPED_ANVIL, ID.DAMAGED_ANVIL });
-        ID_AUTO_MAPPING.put("beacon", new Identifier[] { ID.BEACON });
-        ID_AUTO_MAPPING.put("brewing_stand", new Identifier[] { ID.BREWING_STAND });
-        ID_AUTO_MAPPING.put("crafting", new Identifier[] { ID.CRAFTING_TABLE });
-        ID_AUTO_MAPPING.put("enchantment", new Identifier[] { ID.ENCHANTING_TABLE });
-        ID_AUTO_MAPPING.put("hopper", new Identifier[] { ID.HOPPER });
+        ID_AUTO_MAPPING.put("anvil", setOf(ID.ANVIL, ID.CHIPPED_ANVIL, ID.DAMAGED_ANVIL));
+        ID_AUTO_MAPPING.put("beacon", setOf(ID.BEACON));
+        ID_AUTO_MAPPING.put("brewing_stand", setOf(ID.BREWING_STAND));
+        ID_AUTO_MAPPING.put("crafting", setOf(ID.CRAFTING_TABLE));
+        ID_AUTO_MAPPING.put("enchantment", setOf(ID.ENCHANTING_TABLE));
+        ID_AUTO_MAPPING.put("hopper", setOf(ID.HOPPER));
 
         CARPET_TO_COLOR_MAPPING.put("minecraft:white_carpet", "white");
         CARPET_TO_COLOR_MAPPING.put("minecraft:orange_carpet", "orange");

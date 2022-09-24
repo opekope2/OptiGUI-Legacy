@@ -1,18 +1,16 @@
 package opekope2.optigui.optifinecompat;
 
-import static opekope2.optigui.util.OptiFineParser.parseList;
+import static opekope2.optigui.util.OptiFineParser.*;
 import static opekope2.optigui.util.Util.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
 
 import org.apache.commons.io.FilenameUtils;
 
-import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.ChestType;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.passive.WanderingTraderEntity;
@@ -21,23 +19,20 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Nameable;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import opekope2.optigui.OptiGUIClient;
+import opekope2.optigui.interfaces.RegexMatcher;
+import opekope2.optigui.interfaces.TextureRemapper;
 import opekope2.optigui.optifinecompat.OptiFineResourceLoader.ResourceLoadContext;
 import opekope2.optigui.util.*;
 
 // https://optifine.readthedocs.io/custom_guis.html
 // https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/custom_guis.properties
 public final class OptiFineProperties {
-    private static final Identifier[] EMPTY_ID_ARRAY = new Identifier[0];
-
     private static final EnumProperty<ChestType> CHEST_TYPE_ENUM = EnumProperty.of("type", ChestType.class);
 
     private final Map<String, ContainerRemapper> remappers = new HashMap<>();
-    private final Map<Identifier, BlockMatcher> blockMatchers = new HashMap<>();
-    private final Map<Identifier, EntityMatcher> entityMatchers = new HashMap<>();
+    private final Map<Identifier, InteractionMatcher> blockMatchers = new HashMap<>();
+    private final Map<Identifier, InteractionMatcher> entityMatchers = new HashMap<>();
 
     private static final String texturePathPrefix = "texture.";
 
@@ -46,7 +41,7 @@ public final class OptiFineProperties {
         remappers.put("chest", this::remapChest);
         remappers.put("dispenser", this::remapDispenser);
         remappers.put("furnace", this::remapFurnace);
-        remappers.put("shulker_box", this::remapShulkerBlock);
+        remappers.put("shulker_box", this::remapShulkerBox);
         remappers.put("horse", this::remapHorse);
         remappers.put("villager", this::remapVillager);
 
@@ -78,14 +73,14 @@ public final class OptiFineProperties {
     private Boolean _barrel = null;
     // endregion
 
-    private IRegexMatcher nameMatcher = null;
-    private List<Identifier> biomes = null;
-    private List<IntRange> heights = null;
-    private List<IntRange> levels = null;
-    private List<VillagerMatcher> professions = null;
-    private List<String> colors = null;
+    private RegexMatcher nameMatcher = null;
+    private Set<Identifier> biomes = null;
+    private Iterable<IntRange> heights = null;
+    private Iterable<IntRange> levels = null;
+    private Iterable<VillagerMatcher> professions = null;
+    private Set<String> colors = null;
 
-    private Identifier[] ids = null;
+    private Set<Identifier> ids = null;
 
     // region Construction
     private OptiFineProperties(ResourceLoadContext context) {
@@ -94,7 +89,7 @@ public final class OptiFineProperties {
             return;
         }
 
-        Identifier[] ids = ID_AUTO_MAPPING.getOrDefault(container, null);
+        Set<Identifier> ids = ID_AUTO_MAPPING.getOrDefault(container, null);
         if (ids != null) {
             this.ids = ids;
         }
@@ -111,47 +106,50 @@ public final class OptiFineProperties {
     private void loadProperties(Properties props) {
         String name = props.getProperty("name", null);
         if (name != null) {
-            this.nameMatcher = OptiFineParser.parseRegex(name);
+            this.nameMatcher = parseRegex(name);
         }
 
         String biomes = props.getProperty("biomes", null);
         if (biomes != null) {
-            this.biomes = OptiFineParser.parseIdentifierList(biomes);
+            this.biomes = new HashSet<>(parseIdentifierList(biomes));
         }
 
         String heights = props.getProperty("heights", null);
         if (heights != null) {
-            this.heights = OptiFineParser.parseRangeList(heights);
+            this.heights = parseRangeList(heights);
         }
 
         String levels = props.getProperty("levels", null);
         if (levels != null) {
-            this.levels = OptiFineParser.parseRangeList(levels);
+            this.levels = parseRangeList(levels);
         }
 
         String professions = props.getProperty("professions", null);
         if (professions != null) {
-            this.professions = OptiFineParser.parseProfessionList(professions);
+            this.professions = parseProfessionList(professions);
         }
 
         String colors = props.getProperty("colors", null);
         if (colors != null) {
-            this.colors = OptiFineParser.parseList(colors);
+            this.colors = new HashSet<>(parseList(colors));
         }
     }
 
     private void loadTextureRemaps(ResourceLoadContext ctx) {
         String texture = ctx.getProperties().getProperty("texture", null);
-        String resFolder = ctx.getResourceId().toString();
-        resFolder = resFolder.substring(resFolder.indexOf(":") + 1, resFolder.lastIndexOf("/"));
+        String resFolder = new File(ctx.getResourceId().getPath()).getParent();
 
         if (texture != null) {
             Identifier id = PathResolver.resolve(resFolder, texture);
             Identifier foundId = ctx.findResource(id);
             if (foundId == null) {
-                OptiGUIClient.logger.warn("Resource '{}' is missing!", id.toString());
+                OptiGUIClient.logger.warn(
+                        "Texture '{}' is missing!\nIn resource pack '{}', resource '{}'.",
+                        id.toString(), ctx.getResourcePackName(), ctx.getResourceId());
             } else {
-                textureRemaps.put(getTextureToRemap(ctx.getProperties()), foundId);
+                for (Identifier textureToRemap : getTextureToRemap(ctx.getProperties())) {
+                    textureRemaps.put(textureToRemap, foundId);
+                }
             }
         }
 
@@ -163,7 +161,9 @@ public final class OptiFineProperties {
                 Identifier id = PathResolver.resolve(resFolder, value);
                 Identifier foundId = ctx.findResource(id);
                 if (foundId == null) {
-                    OptiGUIClient.logger.warn("Resource '{}' is missing!", id.toString());
+                    OptiGUIClient.logger.warn(
+                            "Resource '{}' is missing!\nIn resource pack '{}', resource '{}'.",
+                            id.toString(), ctx.getResourcePackName(), ctx.getResourceId());
                 } else {
                     String texturePath = key.substring(texturePathPrefix.length());
                     textureRemaps.put(PathResolver.resolve("textures/gui", texturePath), foundId);
@@ -172,28 +172,33 @@ public final class OptiFineProperties {
         }
     }
 
-    private Identifier getTextureToRemap(Properties properties) {
+    private Set<Identifier> getTextureToRemap(Properties properties) {
         String container = properties.getProperty("container", null);
-        Function<Properties, Identifier> remapper = TEXTURE_REMAPPERS.get(container);
-        return remapper != null ? remapper.apply(properties) : null;
+        Identifier containerTexture = TEXTURE_AUTO_MAPPING.get(container);
+        if (containerTexture != null) {
+            return setOf(containerTexture);
+        }
+
+        TextureRemapper remapper = TEXTURE_REMAPPERS.get(container);
+        return remapper != null ? remapper.remap(properties) : setOf();
     }
     // endregion
 
     // region Replacing
-    public boolean hasReplacementGuiForBlock(BlockPos pos) {
+    public boolean matchesBlock(InteractionInfo interaction) {
         if (isEntity) {
             return false;
         }
 
-        MinecraftClient mc = MinecraftClient.getInstance();
-        if (biomes != null && !biomes.contains(getBiomeId(mc, pos))) {
+        if (biomes != null && !biomes.contains(interaction.getBiome())) {
             return false;
         }
 
         if (heights != null) {
             boolean matchesHeight = false;
+            int y = interaction.getBlockPos().getY();
             for (IntRange height : heights) {
-                if (height.test(pos.getY())) {
+                if (height.test(y)) {
                     matchesHeight = true;
                     break;
                 }
@@ -203,50 +208,37 @@ public final class OptiFineProperties {
             }
         }
 
-        if (nameMatcher != null) {
-            BlockEntity entity = mc.world.getBlockEntity(pos);
-            if (entity != null && entity instanceof Nameable nameable) {
-                if (nameable.hasCustomName()) {
-                    String customName = nameable.getCustomName().asString();
-                    if (!nameMatcher.matches(customName)) {
-                        return false;
-                    }
-                } else if (!nameMatcher.matches("")) {
-                    return false;
-                }
-            }
-        }
-
-        BlockState state = mc.world.getBlockState(pos);
-        Identifier blockId = Registry.BLOCK.getId(state.getBlock());
-
-        if (!contains(ids, blockId)) {
+        if (nameMatcher != null
+                && !nameMatcher.matches(interaction.hasCustomName() ? interaction.getCustomName() : "")) {
             return false;
         }
 
-        BlockMatcher matcher = blockMatchers.getOrDefault(blockId, null);
-        if (matcher != null && !matcher.matchesBlock(pos)) {
+        if (!ids.contains(interaction.getId())) {
+            return false;
+        }
+
+        InteractionMatcher matcher = blockMatchers.getOrDefault(interaction.getId(), null);
+        if (matcher != null && !matcher.matchesInteraction(interaction)) {
             return false;
         }
 
         return true;
     }
 
-    public boolean hasReplacementGuiForEntity(Entity entity) {
+    public boolean matchesEntity(InteractionInfo interaction) {
         if (!isEntity) {
             return false;
         }
 
-        MinecraftClient mc = MinecraftClient.getInstance();
-        BlockPos pos = entity.getBlockPos();
-        if (biomes != null && !biomes.contains(getBiomeId(mc, pos))) {
+        if (biomes != null && !biomes.contains(interaction.getBiome())) {
             return false;
         }
 
         if (heights != null) {
             boolean matchesHeight = false;
+            int y = interaction.getBlockPos().getY();
             for (IntRange height : heights) {
-                if (height.test(pos.getY())) {
+                if (height.test(y)) {
                     matchesHeight = true;
                     break;
                 }
@@ -256,39 +248,37 @@ public final class OptiFineProperties {
             }
         }
 
-        if (nameMatcher != null && !nameMatcher.matches(entity.getCustomName().asString())) {
+        if (nameMatcher != null
+                && !nameMatcher.matches(interaction.hasCustomName() ? interaction.getCustomName() : "")) {
             return false;
         }
 
-        Identifier entityId = Registry.ENTITY_TYPE.getId(entity.getType());
-
-        if (!contains(ids, entityId)) {
+        if (!ids.contains(interaction.getId())) {
             return false;
         }
 
-        EntityMatcher matcher = entityMatchers.getOrDefault(entityId, null);
-        if (matcher != null && !matcher.matchesEntity(entity)) {
+        InteractionMatcher matcher = entityMatchers.getOrDefault(interaction.getId(), null);
+        if (matcher != null && !matcher.matchesInteraction(interaction)) {
             return false;
         }
 
         return true;
     }
 
-    public boolean matchesAnything() {
+    public boolean matchesAnythingElse(InteractionInfo interaction) {
         if (ids != null) {
             return false;
         }
 
-        MinecraftClient mc = MinecraftClient.getInstance();
-
-        if (biomes != null && !biomes.contains(getBiomeId(mc, mc.player.getBlockPos()))) {
+        if (biomes != null && !biomes.contains(interaction.getBiome())) {
             return false;
         }
 
         if (heights != null) {
             boolean matchesHeight = true;
+            int y = interaction.getBlockPos().getY();
             for (IntRange height : heights) {
-                if (height.test(mc.player.getBlockPos().getY())) {
+                if (height.test(y)) {
                     matchesHeight = true;
                     break;
                 }
@@ -301,7 +291,7 @@ public final class OptiFineProperties {
         return true;
     }
 
-    public boolean hasReplacementGuiTexture(Identifier original) {
+    public boolean canReplaceTexture(Identifier original) {
         if (textureRemaps.containsKey(original)) {
             return true;
         }
@@ -310,7 +300,7 @@ public final class OptiFineProperties {
         return textureRemaps.containsKey(new Identifier(namespace, path));
     }
 
-    public Identifier getReplacementTexture(Identifier original) {
+    public Identifier replaceTexture(Identifier original) {
         if (textureRemaps.containsKey(original)) {
             return textureRemaps.getOrDefault(original, original);
         }
@@ -328,55 +318,71 @@ public final class OptiFineProperties {
         ender = getBoolean(packProps.getProperty("ender", null));
         _barrel = getBoolean(packProps.getProperty("_barrel", null));
 
-        List<Identifier> variantList = new ArrayList<>();
-        variantList.add(ID.CHEST);
+        Set<Identifier> variants = new HashSet<>();
+        variants.add(ID.CHEST);
         if (ender != null && ender) {
-            variantList.add(ID.ENDER_CHEST);
+            variants.add(ID.ENDER_CHEST);
         }
         if (trapped != null && trapped) {
-            variantList.add(ID.TRAPPED_CHEST);
+            variants.add(ID.TRAPPED_CHEST);
         }
         if (_barrel != null && _barrel) {
-            variantList.add(ID.BARREL);
+            variants.add(ID.BARREL);
         }
-        ids = variantList.toArray(EMPTY_ID_ARRAY);
+        ids = variants;
     }
 
     private void remapDispenser(Properties properties) {
         String variants = properties.getProperty("variants", null);
 
-        ids = variants == null
-                ? new Identifier[] { ID.DISPENSER, ID.DROPPER }
-                : switch (variants) {
-                    case "", "dispenser" -> new Identifier[] { ID.DISPENSER };
-                    case "dropper" -> new Identifier[] { ID.DROPPER };
-                    default -> ids;
-                };
+        if (variants == null) {
+            this.ids = setOf(ID.DISPENSER, ID.DROPPER);
+            return;
+        }
+
+        Set<Identifier> ids = new HashSet<>();
+
+        for (String variant : parseList(variants)) {
+            switch (variant) {
+                case "", "dispenser" -> ids.add(ID.DISPENSER);
+                case "dropper" -> ids.add(ID.DROPPER);
+            }
+        }
+
+        this.ids = ids;
     }
 
     private void remapFurnace(Properties properties) {
         String variants = properties.getProperty("variants", null);
 
-        ids = variants == null
-                ? new Identifier[] { ID.FURNACE, ID.BLAST_FURNACE, ID.SMOKER }
-                : switch (variants) {
-                    case "", "_furnace" -> new Identifier[] { ID.FURNACE };
-                    case "_blast", "_blast_furnace" -> new Identifier[] { ID.BLAST_FURNACE };
-                    case "_smoker" -> new Identifier[] { ID.SMOKER };
-                    default -> ids;
-                };
+        if (variants == null) {
+            this.ids = setOf(ID.FURNACE, ID.BLAST_FURNACE, ID.SMOKER);
+            return;
+        }
+
+        Set<Identifier> ids = new HashSet<>();
+
+        for (String variant : parseList(variants)) {
+            switch (variant) {
+                case "", "_furnace" -> ids.add(ID.FURNACE);
+                case "_blast", "_blast_furnace" -> ids.add(ID.BLAST_FURNACE);
+                case "_smoker" -> ids.add(ID.SMOKER);
+            }
+        }
+
+        this.ids = ids;
     }
 
-    private void remapShulkerBlock(Properties properties) {
+    private void remapShulkerBox(Properties properties) {
         String colors = properties.getProperty("colors", null);
-        List<Identifier> ids = new ArrayList<>();
+        Set<Identifier> ids = new HashSet<>();
 
         if (colors == null) {
             for (Identifier shulker : COLOR_TO_SHULKER_MAPPING.values()) {
                 ids.add(shulker);
             }
         } else {
-            List<String> colorList = parseList(colors);
+            Iterable<String> colorList = parseList(colors);
             for (String color : colorList) {
                 Identifier shulker = COLOR_TO_SHULKER_MAPPING.getOrDefault(color, null);
                 if (shulker != null) {
@@ -385,8 +391,7 @@ public final class OptiFineProperties {
             }
         }
 
-        // C# is smarter than this
-        this.ids = ids.toArray(EMPTY_ID_ARRAY);
+        this.ids = ids;
     }
     // endregion
 
@@ -395,30 +400,28 @@ public final class OptiFineProperties {
         isEntity = true;
         String variants = properties.getProperty("variants", null);
         if (variants == null) {
-            ids = new Identifier[] { ID.HORSE, ID.DONKEY, ID.MULE, ID.LLAMA };
+            ids = setOf(ID.HORSE, ID.DONKEY, ID.MULE, ID.LLAMA);
             return;
         }
         ids = switch (variants) {
-            case "horse" -> new Identifier[] { ID.HORSE };
-            case "donkey" -> new Identifier[] { ID.DONKEY };
-            case "mule" -> new Identifier[] { ID.MULE };
-            case "llama" -> new Identifier[] { ID.LLAMA };
+            case "horse" -> setOf(ID.HORSE);
+            case "donkey" -> setOf(ID.DONKEY);
+            case "mule" -> setOf(ID.MULE);
+            case "llama" -> setOf(ID.LLAMA);
             default -> ids;
         };
     }
 
     private void remapVillager(Properties properties) {
         isEntity = true;
-        ids = new Identifier[] { ID.VILLAGER, ID.WANDERING_TRADER };
+        ids = setOf(ID.VILLAGER, ID.WANDERING_TRADER);
     }
     // endregion
 
     // region Block matchers
-    private boolean matchesChest(BlockPos pos) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        BlockState state = mc.world.getBlockState(pos);
-        Identifier id = Registry.BLOCK.getId(state.getBlock());
-        Comparable<?> type = state.getEntries().get(CHEST_TYPE_ENUM);
+    private boolean matchesChest(InteractionInfo interaction) {
+        Identifier id = interaction.getId();
+        Comparable<?> type = interaction.getBlockState().getEntries().get(CHEST_TYPE_ENUM);
 
         boolean matchesLarge = large == null || (type == null || large != type.equals(ChestType.SINGLE));
         boolean matchesChristmas = christmas == null ? true : christmas == isChristmas();
@@ -439,13 +442,12 @@ public final class OptiFineProperties {
         return false;
     }
 
-    private boolean matchesBeacon(BlockPos pos) {
+    private boolean matchesBeacon(InteractionInfo interaction) {
         if (levels == null) {
             return true;
         }
 
-        MinecraftClient mc = MinecraftClient.getInstance();
-        BlockEntity entity = mc.world.getBlockEntity(pos);
+        BlockEntity entity = interaction.getBlockEntity();
         int beaconLevel = entity.createNbt().getInt("Levels");
 
         for (IntRange level : levels) {
@@ -456,19 +458,16 @@ public final class OptiFineProperties {
         return false;
     }
 
-    private boolean matchesFurnace(BlockPos pos) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        BlockState state = mc.world.getBlockState(pos);
-        Identifier id = Registry.BLOCK.getId(state.getBlock());
-
+    private boolean matchesFurnace(InteractionInfo interaction) {
+        Identifier id = interaction.getId();
         return ID.BLAST_FURNACE.equals(id) || ID.FURNACE.equals(id) || ID.SMOKER.equals(id);
     }
     // endregion
 
     // region Entity matchers
-    private boolean matchesLlama(Entity entity) {
+    private boolean matchesLlama(InteractionInfo interaction) {
         NbtCompound nbt = new NbtCompound();
-        entity.writeNbt(nbt);
+        interaction.getEntity().writeNbt(nbt);
         NbtElement nbtDecor = nbt.get("DecorItem");
 
         if (nbtDecor != null && nbtDecor instanceof NbtCompound compound) {
@@ -483,11 +482,12 @@ public final class OptiFineProperties {
         return false;
     }
 
-    private boolean matchesVillager(Entity entity) {
+    private boolean matchesVillager(InteractionInfo interaction) {
         if (professions == null) {
             return true;
         }
 
+        Entity entity = interaction.getEntity();
         if (entity instanceof VillagerEntity villager) {
             for (VillagerMatcher matcher : professions) {
                 if (matcher.matchesVillager(villager)) {
@@ -513,14 +513,10 @@ public final class OptiFineProperties {
     }
 
     private static interface ContainerRemapper {
-        void remapContainer(Properties packProps);
+        public void remapContainer(Properties packProps);
     }
 
-    private static interface BlockMatcher {
-        boolean matchesBlock(BlockPos pos);
-    }
-
-    private static interface EntityMatcher {
-        boolean matchesEntity(Entity entity);
+    private static interface InteractionMatcher {
+        public boolean matchesInteraction(InteractionInfo interaction);
     }
 }

@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
-import opekope2.optigui.GuiTextureReplacer;
+import opekope2.optigui.TextureReplacer;
 
 public final class OptiFineResourceLoader implements SimpleSynchronousResourceReloadListener {
     public static final Identifier ID = new Identifier("optigui", "optifine_resource_loader");
@@ -19,12 +19,12 @@ public final class OptiFineResourceLoader implements SimpleSynchronousResourceRe
 
     @Override
     public void reload(ResourceManager manager) {
-        GuiTextureReplacer.instance.clear();
+        TextureReplacer.instance.clear();
         for (Identifier id : manager.findResources("optifine/gui/container", path -> path.endsWith(".properties"))) {
             try {
                 ResourceLoadContext ctx = new ResourceLoadContext(manager, id);
                 OptiFineProperties props = OptiFineProperties.parse(ctx);
-                GuiTextureReplacer.instance.add(props);
+                TextureReplacer.instance.add(props);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -49,7 +49,7 @@ public final class OptiFineResourceLoader implements SimpleSynchronousResourceRe
             if (resourceManager.containsResource(id)) {
                 return id;
             }
-            
+
             String namespace = id.getNamespace(), path = id.getPath();
 
             id = new Identifier(namespace, path + ".png");
@@ -66,6 +66,15 @@ public final class OptiFineResourceLoader implements SimpleSynchronousResourceRe
 
         public Resource getResource() throws IOException {
             return resourceManager.getResource(resourceId);
+        }
+
+        public String getResourcePackName() {
+            try {
+                Resource resource = getResource();
+                return resource.getResourcePackName();
+            } catch (IOException e) {
+                return null;
+            }
         }
 
         public Properties getProperties() {

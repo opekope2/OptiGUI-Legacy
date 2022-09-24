@@ -1,56 +1,25 @@
 package opekope2.optigui.util;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import opekope2.optigui.OptiGUIClient;
 
-import static opekope2.optigui.util.Util.getBiomeId;
-
 public class InteractionCache {
-    private boolean valid = false;
 
-    private Identifier biome;
-    private int height;
-    private Identifier id;
-
-    private BlockPos pos;
-    private Entity entity;
+    private final InteractionInfo interaction = new InteractionInfo();
 
     private Identifier original;
     private Identifier replacement;
 
     public void cacheBlock(BlockPos pos) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-
-        biome = getBiomeId(mc, pos);
-        height = pos.getY();
-        id = Registry.BLOCK.getId(mc.world.getBlockState(pos).getBlock());
-
-        this.pos = pos;
-        this.entity = null;
-
+        interaction.fill(pos);
         clearCachedReplacement();
-
-        valid = true;
     }
 
     public void cacheEntity(Entity entity) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        BlockPos pos = entity.getBlockPos();
-
-        biome = getBiomeId(mc, pos);
-        height = pos.getY();
-        id = Registry.ENTITY_TYPE.getId(entity.getType());
-
-        this.pos = pos;
-        this.entity = entity;
-
+        interaction.fill(entity);
         clearCachedReplacement();
-
-        valid = true;
     }
 
     public void cacheReplacement(Identifier original, Identifier replacement) {
@@ -58,20 +27,8 @@ public class InteractionCache {
         this.replacement = replacement;
     }
 
-    public boolean hasCachedBlock() {
-        return valid && pos != null;
-    }
-
-    public boolean hasCachedEntity() {
-        return valid && entity != null;
-    }
-
-    public BlockPos getCachedBlock() {
-        return valid ? pos : null;
-    }
-
-    public Entity getCachedEntity() {
-        return valid ? entity : null;
+    public InteractionInfo getInteraction() {
+        return interaction;
     }
 
     public boolean hasCachedReplacement(Identifier id) {
@@ -82,69 +39,13 @@ public class InteractionCache {
         return replacement;
     }
 
-    public void updateCachedBlockOrEntity() {
-        if (pos != null) {
-            updateCachedBlock();
-        }
-        if (entity != null) {
-            updateCachedEntity();
-        }
-    }
-
-    private void updateCachedBlock() {
-        if (!valid) {
-            return;
-        }
-
-        boolean updated = false;
-
-        MinecraftClient mc = MinecraftClient.getInstance();
-
-        // Fix Quilt issues: #16, #17
-        if (mc.world == null) {
-            OptiGUIClient.logger.warn("Cannot update block after leaving game!");
-            valid = false;
-            return;
-        }
-
-        Identifier blockId = Registry.BLOCK.getId(mc.world.getBlockState(pos).getBlock());
-        if (!blockId.equals(id)) {
-            id = blockId;
-            updated = true;
-        }
-
-        if (updated) {
-            clearCachedReplacement();
-        }
-    }
-
-    private void updateCachedEntity() {
-        if (!valid) {
-            return;
-        }
-
-        if (!entity.isAlive() || entity.isRemoved()) {
-            valid = false;
-            return;
-        }
-
-        boolean updated = false;
-
-        MinecraftClient mc = MinecraftClient.getInstance();
-        BlockPos pos = entity.getBlockPos();
-
-        Identifier biomeId = getBiomeId(mc, pos);
-        if (!biomeId.equals(biome)) {
-            biome = biomeId;
-            updated = false;
-        }
-        int y = pos.getY();
-        if (y != height) {
-            height = y;
-            updated = false;
-        }
-
-        if (updated) {
+    public void refreshInteraction() {
+        try {
+            if (interaction.refresh()) {
+                clearCachedReplacement();
+            }
+        } catch (IllegalStateException e) {
+            OptiGUIClient.logger.warn(e.getMessage());
             clearCachedReplacement();
         }
     }
@@ -155,7 +56,7 @@ public class InteractionCache {
     }
 
     public void clear() {
-        valid = false;
+        interaction.clear();
         clearCachedReplacement();
     }
 }
