@@ -58,6 +58,13 @@ This mod supports some additional GUIs which are not (yet) supported by OptiFine
 
 * `professions` additionally accepts the value `_wandering_trader` to replace the GUI of a wandering trader.
 
+## Currently broken features
+
+* Custom name matching in .properties [#19](https://github.com/opekope2/OptiGUI/issues/19)
+* Llama carpet matching in .properties [#21](https://github.com/opekope2/OptiGUI/issues/21)
+
+These have been broken for a while and probably need a server-side mod to get the required info to the client.
+
 ## FAQ
 
 ### Can I use this mod in a modpack?
