@@ -65,6 +65,38 @@ This mod supports some additional GUIs which are not (yet) supported by OptiFine
 
 These have been broken for a while and probably need a server-side mod to get the required info to the client.
 
+## Does this mod affect game performance?
+
+### v0.1.0-v1.1.1
+
+Yes, to a high extent.
+
+The code is absolutely not optimized, the mod queries the last interacted block or entity multiple times per rendered frame, for every non-block texture rendered.
+
+Please do not use these versions.
+
+### v1.1.2-v1.1.3
+
+Yes, to an estimated moderately high extent.
+
+Introdced caching, but still queries the last interacted block or entity at least once per rendered frame, for every non-block texture rendered.
+
+Please do not use these versions.
+
+### v1.1.4
+
+Yes, to an estimated moderate extent.
+
+While all optimizations planned for v1.1.2 have been implemented, further optimizations will be implemented soon.
+
+Caches are updated after every game tick instead of every rendered texture, but some code paths do not use the cache.
+
+### v1.1.5
+
+Not much, or to an estimated low extent.
+
+All code paths (except for villager and llama matcher) use cache now.
+
 ## FAQ
 
 ### Can I use this mod in a modpack?
