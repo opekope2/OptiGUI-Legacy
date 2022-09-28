@@ -55,6 +55,7 @@ public final class OptiFineProperties {
         blockMatchers.put(ID.TRAPPED_CHEST, this::matchesChest);
 
         entityMatchers.put(ID.LLAMA, this::matchesLlama);
+        entityMatchers.put(ID.TRADER_LLAMA, this::matchesLlama);
         entityMatchers.put(ID.VILLAGER, this::matchesVillager);
         entityMatchers.put(ID.WANDERING_TRADER, this::matchesVillager);
     }
@@ -137,7 +138,7 @@ public final class OptiFineProperties {
 
     private void loadTextureRemaps(ResourceLoadContext ctx) {
         String texture = ctx.getProperties().getProperty("texture", null);
-        String resFolder = new File(ctx.getResourceId().getPath()).getParent();
+        String resFolder = new File(ctx.getResourceId().getPath()).getParent().replace('\\', '/');
 
         if (texture != null) {
             Identifier id = PathResolver.resolve(resFolder, texture);
@@ -400,14 +401,14 @@ public final class OptiFineProperties {
         isEntity = true;
         String variants = properties.getProperty("variants", null);
         if (variants == null) {
-            ids = setOf(ID.HORSE, ID.DONKEY, ID.MULE, ID.LLAMA);
+            ids = setOf(ID.HORSE, ID.DONKEY, ID.MULE, ID.LLAMA, ID.TRADER_LLAMA);
             return;
         }
         ids = switch (variants) {
             case "horse" -> setOf(ID.HORSE);
             case "donkey" -> setOf(ID.DONKEY);
             case "mule" -> setOf(ID.MULE);
-            case "llama" -> setOf(ID.LLAMA);
+            case "llama" -> setOf(ID.LLAMA, ID.TRADER_LLAMA);
             default -> ids;
         };
     }

@@ -24,6 +24,7 @@ public interface ID {
     public static final Identifier DONKEY = new Identifier("minecraft", "donkey");
     public static final Identifier HORSE = new Identifier("minecraft", "horse");
     public static final Identifier LLAMA = new Identifier("minecraft", "llama");
+    public static final Identifier TRADER_LLAMA = new Identifier("minecraft", "trader_llama");
     public static final Identifier MULE = new Identifier("minecraft", "mule");
     public static final Identifier VILLAGER = new Identifier("minecraft", "villager");
     public static final Identifier WANDERING_TRADER = new Identifier("minecraft", "wandering_trader");
