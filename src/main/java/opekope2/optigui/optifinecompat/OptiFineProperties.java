@@ -139,7 +139,7 @@ public final class OptiFineProperties {
 
     private void loadTextureRemaps(ResourceLoadContext ctx) {
         String texture = ctx.getProperties().getProperty("texture", null);
-        String resFolder = new File(ctx.getResourceId().getPath()).getParent();
+        String resFolder = new File(ctx.getResourceId().getPath()).getParent().replace('\\', '/');
 
         if (texture != null) {
             Identifier id = PathResolver.resolve(resFolder, texture);
