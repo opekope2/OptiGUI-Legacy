@@ -27,8 +27,11 @@ This list is not exhaustive. If you know a resource pack which works, please ope
 ## Partially supported resource packs
 
 * [Advanced GUI](https://www.planetminecraft.com/texture-pack/custom-gui/) ¹
+* [New Default+](https://www.curseforge.com/minecraft/texture-packs/newdefaultplus) ²
 
 ¹ Color shulker boxes, Ender chests and Villager Professions do not work. The resource pack does not include OptiFine-specific assets, and these features are not supported by OptiGUI. (Some mods (Colourful Containers) include assets for these features and work with OptiGUI)
+
+² Barrel does not work, neither does it work with OptiFine. The resource pack does not specify it according to the format.
 
 ## Mods with incompatibilities
 
@@ -61,7 +64,6 @@ This mod supports some additional GUIs which are not (yet) supported by OptiFine
 ## Currently broken features
 
 * Custom name matching in .properties [#19](https://github.com/opekope2/OptiGUI/issues/19)
-* Llama carpet matching in .properties [#21](https://github.com/opekope2/OptiGUI/issues/21)
 
 These have been broken for a while and probably need a server-side mod to get the required info to the client.
 
@@ -91,7 +93,7 @@ While all optimizations planned for v1.1.2 have been implemented, further optimi
 
 Caches are updated after every game tick instead of every rendered texture, but some code paths do not use the cache.
 
-### v1.1.5
+### v1.1.5+
 
 Not much, or to an estimated low extent.
 
