@@ -11,6 +11,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.chunk.ChunkManager;
 
 public class InteractionInfo {
     private boolean valid = false;
@@ -34,6 +35,12 @@ public class InteractionInfo {
         if (mc.world == null) {
             valid = false;
             throw new IllegalStateException("Received game tick after leaving world!");
+        }
+
+        ChunkManager chunker = mc.world.getChunkManager();
+        if (!chunker.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+            clear();
+            return true;
         }
 
         boolean updated = false;
@@ -66,6 +73,11 @@ public class InteractionInfo {
      */
     public boolean fill(Entity entity) {
         MinecraftClient mc = MinecraftClient.getInstance();
+
+        if (entity.isRemoved()) {
+            clear();
+            return true;
+        }
 
         boolean updated = false;
 
