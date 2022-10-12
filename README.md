@@ -6,6 +6,7 @@ This mod supports most OptiFine GUI resource packs. I didn't do an extensive tes
 If a resource pack does not work or works differently than using OptiFine, please open an issue.
 
 ## How do I use it
+
 1. Download and install [Fabric](https://fabricmc.net/use)
 2. Download [Fabric API](https://fabricmc.net/use) and put it in your mods folder
 3. Download this mod from [GitHub releases](https://github.com/opekope2/OptiGUI/releases), [Modrinth](https://modrinth.com/mod/optigui/versions), or [CurseForge](https://www.curseforge.com/minecraft/mc-mods/optigui/files)
@@ -64,8 +65,8 @@ This mod supports some additional GUIs which are not (yet) supported by OptiFine
 ## Currently broken features
 
 * Custom name matching in .properties [#19](https://github.com/opekope2/OptiGUI/issues/19)
-
-These have been broken for a while and probably need a server-side mod to get the required info to the client.
+  * This has been broken for a while
+  * Workaround: Use [KnowMyName](https://github.com/PssbleTrngle/KnowMyName) server-side mod
 
 ## Does this mod affect game performance?
 
@@ -81,7 +82,7 @@ Please do not use these versions.
 
 Yes, to an estimated moderately high extent.
 
-Introdced caching, but still queries the last interacted block or entity at least once per rendered frame, for every non-block texture rendered.
+Introduced caching, but still queries the last interacted block or entity at least once per rendered frame, for every non-block texture rendered.
 
 Please do not use these versions.
 
