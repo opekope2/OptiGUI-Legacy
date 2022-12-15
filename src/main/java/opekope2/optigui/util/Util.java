@@ -9,7 +9,6 @@ import java.util.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import opekope2.optigui.interfaces.Setter;
 import opekope2.optigui.interfaces.TextureRemapper;
 
@@ -53,8 +52,8 @@ public final class Util {
     }
 
     public static Identifier getBiomeId(MinecraftClient mc, BlockPos pos) {
-        return mc.world.getRegistryManager().get(Registry.BIOME_KEY)
-                .getId(mc.world.getBiome(pos).value());
+        var biomeKey = mc.world.getBiome(pos).getKey();
+        return biomeKey.isPresent() ? biomeKey.get().getValue() : null;
     }
 
     private static Set<Identifier> remapFurnaceTexture(Properties properties) {
