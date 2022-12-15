@@ -4,7 +4,7 @@ import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.passive.WanderingTraderEntity;
 import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 import net.minecraft.village.VillagerData;
 
 public final class VillagerMatcher {
@@ -20,7 +20,7 @@ public final class VillagerMatcher {
 
     public boolean matchesVillager(VillagerEntity villager) {
         VillagerData data = villager.getVillagerData();
-        if (!profession.equals(Registry.VILLAGER_PROFESSION.getId(data.getProfession()))) {
+        if (!profession.equals(Registries.VILLAGER_PROFESSION.getId(data.getProfession()))) {
             return false;
         }
         for (IntRange level : levels) {

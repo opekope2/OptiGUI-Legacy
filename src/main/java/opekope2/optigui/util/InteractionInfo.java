@@ -10,7 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 import net.minecraft.world.chunk.ChunkManager;
 
 public class InteractionInfo {
@@ -61,7 +61,7 @@ public class InteractionInfo {
                 updated |= setAndCheckIfUpdated(x -> customName = x, customName, (String) null);
             }
         }
-        updated |= setAndCheckIfUpdated(x -> id = x, id, Registry.BLOCK.getId(blockState.getBlock()));
+        updated |= setAndCheckIfUpdated(x -> id = x, id, Registries.BLOCK.getId(blockState.getBlock()));
 
         valid = true;
 
@@ -92,7 +92,7 @@ public class InteractionInfo {
                     entity.hasCustomName() ? entity.getCustomName().getString() : null);
         }
         {
-            updated |= setAndCheckIfUpdated(x -> id = x, id, Registry.ENTITY_TYPE.getId(entity.getType()));
+            updated |= setAndCheckIfUpdated(x -> id = x, id, Registries.ENTITY_TYPE.getId(entity.getType()));
         }
 
         valid = true;
